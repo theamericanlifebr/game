@@ -313,6 +313,8 @@ function showMode1Intro(callback) {
   const overlay = document.getElementById('intro-overlay');
   const audio = document.getElementById('somModo1Intro');
   const img = document.getElementById('intro-image');
+  points = 3500;
+  atualizarBarraProgresso();
   img.style.animation = 'none';
   img.style.transition = 'none';
   img.style.opacity = '1';
@@ -342,6 +344,8 @@ function showModeIntro(info, callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(info.audio);
+  points = 3500;
+  atualizarBarraProgresso();
   img.src = info.img;
   img.style.animation = 'none';
   img.style.transition = 'none';
@@ -374,6 +378,8 @@ function showModeTransition(info, callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(info.audio);
+  points = 3500;
+  atualizarBarraProgresso();
   img.src = info.img;
   img.style.animation = 'none';
   img.style.transition = 'none';
@@ -406,6 +412,8 @@ function showLevelUp(callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(levelUpTransition.audio);
+  points = 3500;
+  atualizarBarraProgresso();
   img.src = levelUpTransition.img;
   img.style.animation = 'none';
   img.style.width = '397px';
@@ -507,6 +515,10 @@ function togglePt() {
 function toggleEn() {
   voz = voz ? null : 'en';
   mostrarFrase();
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
 }
 
 function falarFrase() {
@@ -687,7 +699,7 @@ function verificarResposta() {
 }
 
 function continuar() {
-  if (points >= 24999 || transitioning) {
+  if (points > 24998 || transitioning) {
     return;
   }
   fraseIndex++;
@@ -705,7 +717,7 @@ function atualizarBarraProgresso() {
   if (points <= 0) {
     showTryAgain();
   }
-  if (points >= 24999) {
+  if (points > 24998) {
     nextMode();
   }
 }
@@ -833,7 +845,7 @@ window.onload = async () => {
 
   document.addEventListener('keydown', e => {
     if (e.key === 'r') falarFrase();
-    if (e.key === 'h') goHome();
+    if (e.key.toLowerCase() === 'h') toggleDarkMode();
     if (e.key.toLowerCase() === 'i') {
       const [pt, en] = frasesArr[fraseIndex] || ['',''];
       const esperado = esperadoLang === 'pt' ? pt : en;
