@@ -170,6 +170,14 @@ const modeIntros = {
   6: { duration: 6000, img: modeImages[6], audio: 'somModo6Intro' }
 };
 
+function updateLevelIcon() {
+  const icon = document.getElementById('nivel-indicador');
+  if (icon) {
+    icon.src = `selos_niveis/level%20${pastaAtual}.png`;
+  }
+  localStorage.setItem('pastaAtual', pastaAtual);
+}
+
 const levelUpTransition = {
   duration: 4000,
   img: 'https://cdn.dribbble.com/userupload/41814123/file/original-fb8a772ba8676fd28c528fd1259cabcb.gif',
@@ -421,7 +429,7 @@ function beginGame() {
       icon.src = modeImages[selectedMode];
       icon.style.display = 'block';
     }
-    document.getElementById('nivel-indicador').innerText = `Level ${pastaAtual}`;
+    updateLevelIcon();
     switch (selectedMode) {
       case 1:
         mostrarTexto = 'pt';
@@ -606,7 +614,7 @@ function verificarResposta() {
     const nivel = parseInt(cheat[1], 10);
     if (pastas[nivel]) {
       pastaAtual = nivel;
-      document.getElementById("nivel-indicador").innerText = `Level ${pastaAtual}`;
+      updateLevelIcon();
       carregarFrases();
     }
     input.value = "";
@@ -749,6 +757,7 @@ function nextLevel() {
       selectedMode = 1;
       pastaAtual++;
     }
+    updateLevelIcon();
     beginGame();
   };
 
@@ -775,8 +784,10 @@ function goHome() {
 
 
 window.onload = async () => {
+  const saved = parseInt(localStorage.getItem('pastaAtual'), 10);
+  if (saved) pastaAtual = saved;
   await carregarPastas();
-  document.getElementById("nivel-indicador").innerText = `Level ${pastaAtual}`;
+  updateLevelIcon();
 
   if (reconhecimento) {
     reconhecimento.lang = 'en-US';
@@ -798,5 +809,17 @@ window.onload = async () => {
   document.addEventListener('keydown', e => {
     if (e.key === 'r') falarFrase();
     if (e.key === 'h') goHome();
+    if (e.key.toLowerCase() === 'l') {
+      if (reconhecimento) {
+        reconhecimentoAtivo = false;
+        reconhecimento.stop();
+      }
+      clearInterval(timerInterval);
+      clearInterval(prizeTimer);
+      pastaAtual++;
+      points = 3500;
+      updateLevelIcon();
+      beginGame();
+    }
   });
 };
