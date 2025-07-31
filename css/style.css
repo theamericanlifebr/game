@@ -4,6 +4,25 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
+body.dark-mode {
+  background: #000;
+  color: #fff;
+}
+
+body.dark-mode #pt,
+body.dark-mode #texto-exibicao,
+body.dark-mode #resultado,
+body.dark-mode #acertos,
+body.dark-mode #nivel-mensagem,
+body.dark-mode #timer {
+  color: #fff;
+  caret-color: #fff;
+}
+
+body.dark-mode #intro-overlay {
+  background: #000;
+}
+
 #visor {
   display: flex;
   flex-direction: column;
