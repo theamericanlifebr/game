@@ -382,6 +382,10 @@ function showModeTransition(info, callback) {
   const audio = document.getElementById(info.audio);
   points = INITIAL_POINTS;
   atualizarBarraProgresso();
+  if (reconhecimento) {
+    reconhecimentoAtivo = false;
+    reconhecimento.stop();
+  }
   img.src = info.img;
   img.style.animation = 'none';
   img.style.transition = 'none';
