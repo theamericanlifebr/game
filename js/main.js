@@ -690,8 +690,6 @@ function atualizarBarraProgresso() {
   filled.style.backgroundColor = calcularCor(points);
   if (points <= 0) {
     showTryAgain();
-  } else if (points >= limite) {
-    nextLevel();
   }
 }
 
@@ -741,33 +739,6 @@ function showTryAgain() {
   }
 }
 
-function nextLevel() {
-  if (reconhecimento) {
-    reconhecimentoAtivo = false;
-    reconhecimento.stop();
-  }
-  clearInterval(timerInterval);
-  clearInterval(prizeTimer);
-
-  const finish = () => {
-    points = 3500;
-    if (selectedMode < 6) {
-      selectedMode++;
-    } else {
-      selectedMode = 1;
-      pastaAtual++;
-    }
-    updateLevelIcon();
-    beginGame();
-  };
-
-  if (selectedMode < 6) {
-    const info = modeTransitions[selectedMode];
-    showModeTransition(info, finish);
-  } else {
-    showLevelUp(finish);
-  }
-}
 
 function goHome() {
   document.getElementById('visor').style.display = 'none';
