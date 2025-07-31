@@ -132,7 +132,9 @@ let timerInterval = null;
 const TOTAL_FRASES = 24;
 let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
-let points = 3500;
+const INITIAL_POINTS = 3500;
+const NEXT_MODE_THRESHOLD = 24999;
+let points = INITIAL_POINTS;
 let premioBase = 4000;
 let premioDec = 1;
 let penaltyFactor = 0.5;
@@ -313,7 +315,7 @@ function showMode1Intro(callback) {
   const overlay = document.getElementById('intro-overlay');
   const audio = document.getElementById('somModo1Intro');
   const img = document.getElementById('intro-image');
-  points = 3500;
+  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   img.style.animation = 'none';
   img.style.transition = 'none';
@@ -344,7 +346,7 @@ function showModeIntro(info, callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(info.audio);
-  points = 3500;
+  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   img.src = info.img;
   img.style.animation = 'none';
@@ -378,7 +380,7 @@ function showModeTransition(info, callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(info.audio);
-  points = 3500;
+  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   img.src = info.img;
   img.style.animation = 'none';
@@ -412,7 +414,7 @@ function showLevelUp(callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(levelUpTransition.audio);
-  points = 3500;
+  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   img.src = levelUpTransition.img;
   img.style.animation = 'none';
@@ -486,7 +488,7 @@ function beginGame() {
       reconhecimentoAtivo = true;
       reconhecimento.start();
     }
-    points = 3500;
+    points = INITIAL_POINTS;
     premioBase = 4000;
     premioDec = 1;
     penaltyFactor = 0.5;
@@ -699,7 +701,7 @@ function verificarResposta() {
 }
 
 function continuar() {
-  if (points > 24998 || transitioning) {
+  if (points >= NEXT_MODE_THRESHOLD || transitioning) {
     return;
   }
   fraseIndex++;
@@ -717,7 +719,7 @@ function atualizarBarraProgresso() {
   if (points <= 0) {
     showTryAgain();
   }
-  if (points > 24998) {
+  if (points >= NEXT_MODE_THRESHOLD) {
     nextMode();
   }
 }
@@ -738,7 +740,7 @@ function showTryAgain() {
   const restart = () => {
     stopTryAgainAnimation();
     msg.style.display = 'none';
-    points = 3500;
+    points = INITIAL_POINTS;
     carregarFrases();
     if (reconhecimento) {
       reconhecimentoAtivo = true;
@@ -861,7 +863,7 @@ window.onload = async () => {
       clearInterval(timerInterval);
       clearInterval(prizeTimer);
       pastaAtual++;
-      points = 3500;
+      points = INITIAL_POINTS;
       updateLevelIcon();
       beginGame();
     }
