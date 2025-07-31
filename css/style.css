@@ -11,7 +11,7 @@ body {
   justify-content: center;
   gap: 20px;
   height: 100vh;
-  padding: 0 5vw 100px 5vw;
+  padding: 0 5vw 200px 5vw;
   display: none;
 }
 
@@ -179,6 +179,25 @@ body {
   height: 100px;
   opacity: 0.8;
   pointer-events: none;
+}
+
+#mode-buttons {
+  position: fixed;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 999;
+}
+
+#mode-buttons img {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.2s linear;
 }
 
 @media (max-width: 600px) {

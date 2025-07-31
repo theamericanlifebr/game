@@ -178,6 +178,15 @@ function updateLevelIcon() {
   localStorage.setItem('pastaAtual', pastaAtual);
 }
 
+function updateModeIcons() {
+  document.querySelectorAll('#mode-buttons img').forEach(img => {
+    const mode = parseInt(img.dataset.mode, 10);
+    img.style.opacity = mode === selectedMode ? '1' : '0.35';
+  });
+}
+
+let transitioning = false;
+
 const levelUpTransition = {
   duration: 4000,
   img: 'https://cdn.dribbble.com/userupload/41814123/file/original-fb8a772ba8676fd28c528fd1259cabcb.gif',
@@ -278,6 +287,7 @@ function stopTryAgainAnimation() {
 
 function startGame(modo) {
   selectedMode = modo;
+  updateModeIcons();
   listeningForCommand = false;
   document.getElementById('menu').style.display = 'none';
   document.getElementById('visor').style.display = 'none';
@@ -430,6 +440,7 @@ function beginGame() {
       icon.style.display = 'block';
     }
     updateLevelIcon();
+    updateModeIcons();
     switch (selectedMode) {
       case 1:
         mostrarTexto = 'pt';
@@ -691,6 +702,9 @@ function atualizarBarraProgresso() {
   if (points <= 0) {
     showTryAgain();
   }
+  if (points >= 24999) {
+    nextMode();
+  }
 }
 
 function showTryAgain() {
@@ -739,6 +753,35 @@ function showTryAgain() {
   }
 }
 
+function nextMode() {
+  if (transitioning) return;
+  transitioning = true;
+  if (selectedMode < 6) {
+    const current = selectedMode;
+    const next = current + 1;
+    const info = modeTransitions[current];
+    selectedMode = next;
+    const done = () => {
+      startGame(next);
+      transitioning = false;
+    };
+    if (info) {
+      showModeTransition(info, done);
+    } else {
+      done();
+    }
+  } else {
+    pastaAtual++;
+    selectedMode = 1;
+    const done = () => {
+      updateLevelIcon();
+      startGame(1);
+      transitioning = false;
+    };
+    showModeTransition(levelUpTransition, done);
+  }
+}
+
 
 function goHome() {
   document.getElementById('visor').style.display = 'none';
@@ -759,6 +802,14 @@ window.onload = async () => {
   if (saved) pastaAtual = saved;
   await carregarPastas();
   updateLevelIcon();
+  updateModeIcons();
+
+  document.querySelectorAll('#mode-buttons img').forEach(img => {
+    img.addEventListener('click', () => {
+      const modo = parseInt(img.dataset.mode, 10);
+      startGame(modo);
+    });
+  });
 
   if (reconhecimento) {
     reconhecimento.lang = 'en-US';
