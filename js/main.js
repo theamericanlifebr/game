@@ -75,16 +75,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   reconhecimento.onresult = (event) => {
     const transcript = event.results[event.results.length - 1][0].transcript.trim();
     const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (normCmd.includes('black mode') || normCmd.includes('versao escura')) {
-      darkMode = true;
-      updateBackground(currentBarColor);
-      return;
-    }
-    if (normCmd.includes('white mode') || normCmd.includes('versao clara')) {
-      darkMode = false;
-      updateBackground(currentBarColor);
-      return;
-    }
     if (awaitingNextLevel && /next level/i.test(transcript)) {
       awaitingNextLevel = false;
       if (nextLevelCallback) {
@@ -154,8 +144,6 @@ let letsPlayInterval = null;
 let awaitingRetry = false;
 let retryCallback = null;
 let tryAgainColorInterval = null;
-let darkMode = false;
-let currentBarColor = '#ff0000';
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -261,11 +249,6 @@ function resetIntroProgress() {
   filled.style.backgroundColor = calcularCor(0);
 }
 
-function updateBackground(color) {
-  const base = darkMode ? '#000' : '#fff';
-  document.body.style.background = `linear-gradient(to top, ${color} 0%, ${base} 50%, ${base} 100%)`;
-}
-
 function startTryAgainAnimation() {
   const msg = document.getElementById('nivel-mensagem');
   if (!msg) return;
@@ -296,7 +279,16 @@ function startGame(modo) {
     reconhecimentoAtivo = false;
     reconhecimento.stop();
   }
-  beginGame();
+  if (modo === 1) {
+    beginGame();
+  } else {
+    const info = modeIntros[modo];
+    if (info) {
+      showModeIntro(info, beginGame);
+    } else {
+      beginGame();
+    }
+  }
 }
 
 function showMode1Intro(callback) {
@@ -471,11 +463,14 @@ function beginGame() {
     premioBase = 4000;
     premioDec = 1;
     penaltyFactor = 0.5;
-    updateBackground(calcularCor(points));
     carregarFrases();
   };
 
-  start();
+  if (selectedMode === 1) {
+    showMode1Intro(start);
+  } else {
+    start();
+  }
 }
 
 function falar(texto, lang) {
@@ -684,10 +679,7 @@ function atualizarBarraProgresso() {
   const limite = 25000;
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
-  const color = calcularCor(points);
-  currentBarColor = color;
-  filled.style.backgroundColor = color;
-  updateBackground(color);
+  filled.style.backgroundColor = calcularCor(points);
   if (points <= 0) {
     showTryAgain();
   } else if (points >= limite) {
@@ -748,14 +740,24 @@ function nextLevel() {
   }
   clearInterval(timerInterval);
   clearInterval(prizeTimer);
-  points = 3500;
+
+  const finish = () => {
+    points = 3500;
+    if (selectedMode < 6) {
+      selectedMode++;
+    } else {
+      selectedMode = 1;
+      pastaAtual++;
+    }
+    beginGame();
+  };
+
   if (selectedMode < 6) {
-    selectedMode++;
+    const info = modeTransitions[selectedMode];
+    showModeTransition(info, finish);
   } else {
-    selectedMode = 1;
-    pastaAtual++;
+    showLevelUp(finish);
   }
-  beginGame();
 }
 
 function goHome() {
@@ -763,7 +765,6 @@ function goHome() {
   document.getElementById('menu').style.display = 'flex';
   const icon = document.getElementById('mode-icon');
   if (icon) icon.style.display = 'none';
-  updateBackground(currentBarColor);
   if (reconhecimento) {
     reconhecimentoAtivo = true;
     reconhecimento.lang = 'en-US';
@@ -776,7 +777,6 @@ function goHome() {
 window.onload = async () => {
   await carregarPastas();
   document.getElementById("nivel-indicador").innerText = `Level ${pastaAtual}`;
-  updateBackground(calcularCor(points));
 
   if (reconhecimento) {
     reconhecimento.lang = 'en-US';
