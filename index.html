@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>American Life</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="menu">
+    <img id="start-image" src="https://i.pinimg.com/originals/70/b4/66/70b46663202c4db0b820cf3db4f57837.gif" alt="Iniciar">
+  </div>
+
+
+  <div id="visor">
+    <!-- conteúdo visual aqui -->
+    <div id="nivel-indicador"></div>
+    <div id="score"></div>
+    <div id="texto-exibicao"></div>
+    <div id="pt-container">
+      <textarea id="pt" rows="1" readonly></textarea>
+    </div>
+    <div id="barra-progresso">
+      <div id="barra-preenchida"></div>
+    </div>
+    <div id="nivel-mensagem"></div>
+    <div id="timer"></div>
+    <div id="resultado"></div>
+    <div id="acertos"></div>
+    <img id="mode-icon" alt="Mode Icon" style="display:none" />
+  </div>
+
+  <div id="intro-overlay" style="display:none">
+    <img id="intro-image" src="selos%20modos%20de%20jogo/modo1.png" alt="Modo 1">
+    <div id="intro-progress">
+      <div id="intro-progress-filled"></div>
+    </div>
+  </div>
+
+  <audio id="somModo1Intro" src="gamesounds/mode1first.mp3"></audio>
+  <audio id="somModo2Intro" src="gamesounds/mode2first.mp3"></audio>
+  <audio id="somModo3Intro" src="gamesounds/mode3first.mp3"></audio>
+  <audio id="somModo4Intro" src="gamesounds/mode4first.m4a"></audio>
+  <audio id="somModo5Intro" src="gamesounds/mode5first.mp3"></audio>
+  <audio id="somModo6Intro" src="gamesounds/mode6first.mp3"></audio>
+  <audio id="somNextLevel" src="gamesounds/nextlevel.mp3"></audio>
+  <audio id="somLetsPlay" src="gamesounds/letsplay.mp3"></audio>
+
+  <audio id="somAcerto" src="gamesounds/success.mp3"></audio>
+  <audio id="somErro" src="gamesounds/error.mp3"></audio>
+  <audio id="somLevelUp" src="audio/levelup.ogg"></audio>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
