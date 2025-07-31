@@ -110,16 +110,12 @@ body {
 
 #nivel-indicador {
   position: absolute;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 5px 10px;
-  font-size: 24px;
-  font-family: 'Open Sans', sans-serif;
-  color: #333;
-  font-weight: normal;
+  top: 100px;
+  left: 100px;
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
   user-select: none;
-  text-align: center;
 }
 
 

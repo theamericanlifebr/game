@@ -75,6 +75,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   reconhecimento.onresult = (event) => {
     const transcript = event.results[event.results.length - 1][0].transcript.trim();
     const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const now = Date.now();
     if (normCmd.includes('black mode') || normCmd.includes('versao escura')) {
       darkMode = true;
       updateBackground(currentBarColor);
@@ -87,6 +88,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     }
     if (awaitingNextLevel && /next level/i.test(transcript)) {
       awaitingNextLevel = false;
+      ignoreNextLevelUntil = now + 2000;
       if (nextLevelCallback) {
         const cb = nextLevelCallback;
         nextLevelCallback = null;
@@ -99,7 +101,9 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         retryCallback = null;
         cb();
       }
-    } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
+    } else if (handleCommands(normCmd)) {
+      return;
+    } else if ((normCmd.includes('next level') || normCmd.includes('proximo nivel')) && now >= ignoreNextLevelUntil) {
       points += 25000;
       atualizarBarraProgresso();
     } else if (listeningForCommand) {
@@ -156,6 +160,7 @@ let retryCallback = null;
 let tryAgainColorInterval = null;
 let darkMode = false;
 let currentBarColor = '#ff0000';
+let ignoreNextLevelUntil = 0;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -285,6 +290,50 @@ function stopTryAgainAnimation() {
   tryAgainColorInterval = null;
 }
 
+function parseNumber(word) {
+  const map = {
+    '1': 1, 'one': 1, 'um': 1,
+    '2': 2, 'two': 2, 'dois': 2,
+    '3': 3, 'three': 3, 'tres': 3,
+    '4': 4, 'four': 4, 'quatro': 4,
+    '5': 5, 'five': 5, 'cinco': 5,
+    '6': 6, 'six': 6, 'seis': 6
+  };
+  return map[word];
+}
+
+function saveProgress() {
+  localStorage.setItem('pastaAtual', pastaAtual);
+  localStorage.setItem('selectedMode', selectedMode);
+}
+
+function handleCommands(normCmd) {
+  let m = normCmd.match(/pasta\s*(\d+)/);
+  if (m) {
+    const lvl = parseInt(m[1], 10);
+    if (!isNaN(lvl) && pastas[lvl]) {
+      pastaAtual = lvl;
+      document.getElementById('nivel-indicador').src = `selos_niveis/level ${pastaAtual}.png`;
+      saveProgress();
+      if (!listeningForCommand) carregarFrases();
+      return true;
+    }
+  }
+
+  if (listeningForCommand) {
+    m = normCmd.match(/(?:quero jogar|i want to play)\s*(\w+)/);
+    if (m) {
+      const mode = parseNumber(m[1]);
+      if (mode >= 1 && mode <= 6) {
+        listeningForCommand = false;
+        startGame(mode);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 function startGame(modo) {
   selectedMode = modo;
   listeningForCommand = false;
@@ -296,6 +345,7 @@ function startGame(modo) {
     reconhecimentoAtivo = false;
     reconhecimento.stop();
   }
+  saveProgress();
   beginGame();
 }
 
@@ -429,7 +479,7 @@ function beginGame() {
       icon.src = modeImages[selectedMode];
       icon.style.display = 'block';
     }
-    document.getElementById('nivel-indicador').innerText = `Level ${pastaAtual}`;
+    document.getElementById('nivel-indicador').src = `selos_niveis/level ${pastaAtual}.png`;
     switch (selectedMode) {
       case 1:
         mostrarTexto = 'pt';
@@ -472,10 +522,14 @@ function beginGame() {
     premioDec = 1;
     penaltyFactor = 0.5;
     updateBackground(calcularCor(points));
-    carregarFrases();
+  carregarFrases();
   };
 
-  start();
+  if (selectedMode === 1) {
+    showMode1Intro(start);
+  } else {
+    start();
+  }
 }
 
 function falar(texto, lang) {
@@ -611,8 +665,9 @@ function verificarResposta() {
     const nivel = parseInt(cheat[1], 10);
     if (pastas[nivel]) {
       pastaAtual = nivel;
-      document.getElementById("nivel-indicador").innerText = `Level ${pastaAtual}`;
+      document.getElementById("nivel-indicador").src = `selos_niveis/level ${pastaAtual}.png`;
       carregarFrases();
+      saveProgress();
     }
     input.value = "";
     return;
@@ -748,14 +803,24 @@ function nextLevel() {
   }
   clearInterval(timerInterval);
   clearInterval(prizeTimer);
-  points = 3500;
+  const finish = () => {
+    points = 3500;
+    if (selectedMode < 6) {
+      selectedMode++;
+    } else {
+      selectedMode = 1;
+      pastaAtual++;
+    }
+    saveProgress();
+    beginGame();
+  };
+
   if (selectedMode < 6) {
-    selectedMode++;
+    const info = modeTransitions[selectedMode];
+    showModeTransition(info, finish);
   } else {
-    selectedMode = 1;
-    pastaAtual++;
+    showLevelUp(finish);
   }
-  beginGame();
 }
 
 function goHome() {
@@ -775,7 +840,11 @@ function goHome() {
 
 window.onload = async () => {
   await carregarPastas();
-  document.getElementById("nivel-indicador").innerText = `Level ${pastaAtual}`;
+  const storedLevel = parseInt(localStorage.getItem('pastaAtual'), 10);
+  if (!isNaN(storedLevel)) pastaAtual = storedLevel;
+  const storedMode = parseInt(localStorage.getItem('selectedMode'), 10);
+  if (!isNaN(storedMode)) selectedMode = storedMode;
+  document.getElementById("nivel-indicador").src = `selos_niveis/level ${pastaAtual}.png`;
   updateBackground(calcularCor(points));
 
   if (reconhecimento) {
@@ -798,5 +867,10 @@ window.onload = async () => {
   document.addEventListener('keydown', e => {
     if (e.key === 'r') falarFrase();
     if (e.key === 'h') goHome();
+    if (e.key.toLowerCase() === 'l') {
+      pastaAtual++;
+      saveProgress();
+      startGame(selectedMode);
+    }
   });
 };
