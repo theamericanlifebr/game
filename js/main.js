@@ -687,6 +687,9 @@ function verificarResposta() {
 }
 
 function continuar() {
+  if (points >= 24999 || transitioning) {
+    return;
+  }
   fraseIndex++;
   mostrarFrase();
 }
@@ -831,6 +834,13 @@ window.onload = async () => {
   document.addEventListener('keydown', e => {
     if (e.key === 'r') falarFrase();
     if (e.key === 'h') goHome();
+    if (e.key.toLowerCase() === 'i') {
+      const [pt, en] = frasesArr[fraseIndex] || ['',''];
+      const esperado = esperadoLang === 'pt' ? pt : en;
+      document.getElementById('pt').value = esperado;
+      verificarResposta();
+      return;
+    }
     if (e.key.toLowerCase() === 'l') {
       if (reconhecimento) {
         reconhecimentoAtivo = false;
