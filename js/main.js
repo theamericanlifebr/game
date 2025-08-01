@@ -147,6 +147,7 @@ let selectedMode = 1;
 const INITIAL_POINTS = 3500;
 const COMPLETION_THRESHOLD = 25000;
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
+let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
 let points = INITIAL_POINTS;
 let premioBase = 4000;
 let premioDec = 1;
@@ -203,10 +204,19 @@ function updateLevelIcon() {
   localStorage.setItem('pastaAtual', pastaAtual);
 }
 
+function unlockMode(mode, duration = 1000) {
+  unlockedModes[mode] = true;
+  localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
+  document.querySelectorAll(`#menu-modes img[data-mode="${mode}"], #mode-buttons img[data-mode="${mode}"]`).forEach(img => {
+    img.style.transition = `opacity ${duration}ms linear`;
+    img.style.opacity = '1';
+  });
+}
+
 function updateModeIcons() {
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     const mode = parseInt(img.dataset.mode, 10);
-    if (completedModes[mode]) {
+    if (unlockedModes[mode]) {
       img.style.opacity = '1';
     } else {
       img.style.opacity = '0.3';
@@ -243,7 +253,9 @@ function performMenuLevelUp() {
   setTimeout(() => {
     pastaAtual++;
     completedModes = {};
+    unlockedModes = {};
     localStorage.setItem('completedModes', JSON.stringify(completedModes));
+    localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
     updateLevelIcon();
     updateModeIcons();
     levelUpReady = false;
@@ -516,6 +528,8 @@ function beginGame() {
       icon.src = modeImages[selectedMode];
       icon.style.display = 'block';
     }
+    const texto = document.getElementById('texto-exibicao');
+    if (texto) texto.style.opacity = '1';
     updateLevelIcon();
     updateModeIcons();
     switch (selectedMode) {
@@ -728,6 +742,9 @@ function verificarResposta() {
     points += 25000;
     input.value = '';
     atualizarBarraProgresso();
+    if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+      finishMode();
+    }
     return;
   }
   const resultado = document.getElementById("resultado");
@@ -740,8 +757,10 @@ function verificarResposta() {
     acertosTotais++;
     resultado.textContent = '';
     points += 1000;
+    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
     flashSuccess(() => {
-      continuar();
+      if (reached) finishMode();
+      else continuar();
     });
     atualizarBarraProgresso();
     return;
@@ -769,8 +788,10 @@ function verificarResposta() {
     if (selectedMode === 5) {
       points += 1000;
     }
+    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
     flashSuccess(() => {
-      continuar();
+      if (reached) finishMode();
+      else continuar();
     });
   } else {
     document.getElementById("somErro").play();
@@ -808,23 +829,32 @@ function atualizarBarraProgresso() {
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
   filled.style.backgroundColor = calcularCor(points);
-  if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
-    const unlocked = Object.values(completedModes).filter(Boolean).length;
-    if (unlocked >= 5) {
-      const audio = document.getElementById('somNivelDesbloqueado');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-      completedModes[selectedMode] = true;
-      localStorage.setItem('completedModes', JSON.stringify(completedModes));
-      updateModeIcons();
-      goHome();
-    } else {
+}
+
+function finishMode() {
+  if (completedModes[selectedMode]) return;
+  completedModes[selectedMode] = true;
+  localStorage.setItem('completedModes', JSON.stringify(completedModes));
+  const texto = document.getElementById('texto-exibicao');
+  if (texto) {
+    texto.style.transition = 'opacity 1500ms linear';
+    texto.style.opacity = '0';
+  }
+  clearInterval(timerInterval);
+  clearInterval(prizeTimer);
+  setTimeout(() => {
+    goHome();
+    const next = selectedMode + 1;
+    if (next <= 6) {
+      unlockMode(next, 1500);
       const audio = document.getElementById('somModoDesbloqueado');
       if (audio) { audio.currentTime = 0; audio.play(); }
-      completedModes[selectedMode] = true;
-      localStorage.setItem('completedModes', JSON.stringify(completedModes));
-      updateModeIcons();
+    } else {
+      const audio = document.getElementById('somNivelDesbloqueado');
+      if (audio) { audio.currentTime = 0; audio.play(); }
+      performMenuLevelUp();
     }
-  }
+  }, 1500);
 }
 
 function nextMode() {
@@ -910,18 +940,12 @@ function startTutorial() {
   }, 4000);
 
   const mode1 = document.querySelector('#menu-modes img[data-mode="1"]');
-  setTimeout(() => {
-    if (mode1) { mode1.style.transition = 'opacity 300ms linear'; mode1.style.opacity = '1'; }
-  }, 7500);
-
-  setTimeout(() => {
-    if (mode1) { mode1.style.transition = 'opacity 250ms linear'; mode1.style.opacity = '0.3'; }
-  }, 7850);
 
   setTimeout(() => { if (levelIcon) levelIcon.style.display = 'block'; }, 11420);
   setTimeout(() => {
     if (logoTop) logoTop.style.display = 'block';
     if (menuLogo) menuLogo.style.display = 'block';
+    if (mode1) unlockMode(1, 1000);
     tutorialInProgress = false;
   }, 11421);
 }
@@ -953,6 +977,11 @@ window.onload = async () => {
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     img.addEventListener('click', () => {
       const modo = parseInt(img.dataset.mode, 10);
+      if (!unlockedModes[modo]) {
+        const lock = document.getElementById('somLock');
+        if (lock) { lock.currentTime = 0; lock.play(); }
+        return;
+      }
       startGame(modo);
     });
   });
