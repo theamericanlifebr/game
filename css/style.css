@@ -36,23 +36,39 @@ body.dark-mode #intro-overlay {
 
 #menu {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  gap: 40px;
   height: 100vh;
 }
 
-#menu button {
-  background: none;
-  border: none;
-  cursor: pointer;
+#clock {
+  font-size: clamp(40px, 8vw, 80px);
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  color: #000;
+  text-align: center;
 }
 
-#menu img {
-  width: 50%;
-  max-width: 400px;
-  height: auto;
+body.dark-mode #clock {
+  color: #fff;
+}
+
+#menu-modes {
+  display: grid;
+  grid-template-columns: repeat(3, 175px);
+  grid-auto-rows: 175px;
+  gap: 50px;
+}
+
+#menu-modes img {
+  width: 175px;
+  height: 175px;
+  object-fit: contain;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity 0.2s linear;
 }
 
 
@@ -223,6 +239,20 @@ body.dark-mode #intro-overlay {
   #mode-icon {
     width: 40px;
     height: 40px;
+  }
+
+  #clock {
+    font-size: 12vw;
+  }
+
+  #menu-modes {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  #menu-modes img {
+    width: 28vw;
+    height: 28vw;
   }
 }
 
