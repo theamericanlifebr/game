@@ -553,6 +553,8 @@ function beginGame() {
     const icon = document.getElementById('mode-icon');
     if (icon) {
       icon.src = modeImages[selectedMode];
+      const ratio = Math.max(0, Math.min(points, 25000)) / 25000;
+      icon.style.opacity = ratio;
       icon.style.display = 'block';
     }
     const texto = document.getElementById('texto-exibicao');
@@ -856,6 +858,10 @@ function atualizarBarraProgresso() {
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
   filled.style.backgroundColor = calcularCor(points);
+  const icon = document.getElementById('mode-icon');
+  if (icon) {
+    icon.style.opacity = perc / 100;
+  }
 }
 
 function finishMode() {
