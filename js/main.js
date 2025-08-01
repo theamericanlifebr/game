@@ -88,11 +88,13 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       return;
     }
     if (awaitingNextLevel) {
-      awaitingNextLevel = false;
-      if (nextLevelCallback) {
-        const cb = nextLevelCallback;
-        nextLevelCallback = null;
-        cb();
+      if (normCmd.includes('level') || normCmd.includes('next') || normCmd.includes('game')) {
+        awaitingNextLevel = false;
+        if (nextLevelCallback) {
+          const cb = nextLevelCallback;
+          nextLevelCallback = null;
+          cb();
+        }
       }
     } else if (awaitingRetry && (normCmd.includes('try again') || normCmd.includes('tentar de novo'))) {
       awaitingRetry = false;
@@ -226,22 +228,7 @@ function updateModeIcons() {
 }
 
 function checkForMenuLevelUp() {
-  if (tutorialInProgress) return;
-  const menu = document.getElementById('menu');
-  if (!menu || menu.style.display === 'none') return;
-  const ready = unlockedModes[6];
-  if (ready && !levelUpReady) {
-    levelUpReady = true;
-    const audio = document.getElementById('somNivelDesbloqueado');
-    if (audio) { audio.currentTime = 0; audio.play(); }
-    awaitingNextLevel = true;
-    nextLevelCallback = performMenuLevelUp;
-    if (reconhecimento) {
-      reconhecimentoAtivo = true;
-      reconhecimento.lang = 'en-US';
-      reconhecimento.start();
-    }
-  }
+  // Level advancement is triggered only after finishing mode 6
 }
 
 function performMenuLevelUp() {
@@ -260,6 +247,46 @@ function performMenuLevelUp() {
     updateModeIcons();
     levelUpReady = false;
   }, 1000);
+}
+
+function menuLevelUpSequence() {
+  goHome();
+  const menu = document.getElementById('menu');
+  const icons = menu.querySelectorAll('#menu-modes img');
+  icons.forEach(img => {
+    img.style.transition = 'opacity 1ms linear';
+    img.style.opacity = '0.3';
+  });
+  const audio = document.getElementById('somNivelDesbloqueado');
+  if (audio) { audio.currentTime = 0; audio.play(); }
+
+  const msg = document.createElement('div');
+  msg.id = 'next-level-msg';
+  msg.textContent = 'diga next level para avançar';
+  msg.style.display = 'none';
+  menu.appendChild(msg);
+
+  let idx = 0;
+  const interval = setInterval(() => {
+    if (idx < icons.length) {
+      icons[idx].style.opacity = '1';
+      idx++;
+    } else {
+      clearInterval(interval);
+      msg.style.display = 'block';
+      setTimeout(() => { msg.style.opacity = '1'; }, 10);
+      awaitingNextLevel = true;
+      nextLevelCallback = () => {
+        msg.remove();
+        performMenuLevelUp();
+      };
+      if (reconhecimento) {
+        reconhecimentoAtivo = true;
+        reconhecimento.lang = 'en-US';
+        reconhecimento.start();
+      }
+    }
+  }, 500);
 }
 
 let transitioning = false;
@@ -526,6 +553,8 @@ function beginGame() {
     const icon = document.getElementById('mode-icon');
     if (icon) {
       icon.src = modeImages[selectedMode];
+      const ratio = Math.max(0, Math.min(points, 25000)) / 25000;
+      icon.style.opacity = ratio;
       icon.style.display = 'block';
     }
     const texto = document.getElementById('texto-exibicao');
@@ -829,6 +858,10 @@ function atualizarBarraProgresso() {
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
   filled.style.backgroundColor = calcularCor(points);
+  const icon = document.getElementById('mode-icon');
+  if (icon) {
+    icon.style.opacity = perc / 100;
+  }
 }
 
 function finishMode() {
@@ -845,15 +878,10 @@ function finishMode() {
     if (selectedMode === 5) {
       setTimeout(() => {
         goHome();
-        const niv = document.getElementById('somNivelDesbloqueado');
-        if (niv) { niv.currentTime = 0; niv.play(); }
-        checkForMenuLevelUp();
       }, 500);
     }
   } else {
-    const audio = document.getElementById('somNivelDesbloqueado');
-    if (audio) { audio.currentTime = 0; audio.play(); }
-    performMenuLevelUp();
+    menuLevelUpSequence();
   }
 
   updateModeIcons();
@@ -926,10 +954,8 @@ function startTutorial() {
   if (menuLogo) menuLogo.style.display = 'none';
   if (tutorialLogo) {
     tutorialLogo.style.display = 'block';
-    tutorialLogo.style.width = '20vw';
-    tutorialLogo.style.transition = 'width 750ms linear';
-    setTimeout(() => { tutorialLogo.style.width = '30vw'; }, 0);
-    setTimeout(() => { tutorialLogo.style.display = 'none'; }, 751);
+    tutorialLogo.style.width = '20%';
+    setTimeout(() => { tutorialLogo.style.display = 'none'; }, 750);
   }
 
   menuIcons.forEach(img => { img.style.opacity = '0'; });

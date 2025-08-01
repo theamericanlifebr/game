@@ -19,11 +19,36 @@ body.dark-mode #timer {
   caret-color: #fff;
 }
 
+#top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 10px 0;
+  background: linear-gradient(90deg, #00b3b3, #00cccc);
+  font-family: 'Open Sans', sans-serif;
+}
+
+body.dark-mode #top-nav {
+  background: linear-gradient(90deg, #006666, #008080);
+}
+
+#top-nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+body.dark-mode #top-nav a {
+  color: #fff;
+}
+
 body.dark-mode #intro-overlay {
   background: #000;
 }
 
 #visor {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -153,10 +178,10 @@ body.dark-mode #clock {
 
 #nivel-indicador {
   position: absolute;
-  top: 100px;
-  left: 100px;
-  width: 75px;
-  height: 75px;
+  top: 70px;
+  left: 70px;
+  width: 68px;
+  height: 68px;
   object-fit: contain;
   user-select: none;
   pointer-events: none;
@@ -217,12 +242,14 @@ body.dark-mode #clock {
 
 #mode-icon {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 100px;
-  height: 100px;
-  opacity: 0.8;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250px;
+  height: 250px;
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 500ms linear;
 }
 
 #mode-buttons {
@@ -246,8 +273,8 @@ body.dark-mode #clock {
 
 @media (max-width: 600px) {
   #mode-icon {
-    width: 40px;
-    height: 40px;
+    width: 150px;
+    height: 150px;
   }
 
   #clock {
@@ -291,7 +318,7 @@ body.dark-mode #clock {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 20vw;
+  width: 20%;
   height: auto;
   z-index: 10000;
   display: none;
@@ -324,6 +351,16 @@ body.dark-mode #clock {
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   font-size: 14px;
+}
+
+#next-level-msg {
+  margin-top: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  font-size: 14px;
+  color: #777;
+  opacity: 0;
+  transition: opacity 500ms linear;
 }
 
 @keyframes fadeIn {
