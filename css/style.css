@@ -19,6 +19,30 @@ body.dark-mode #timer {
   caret-color: #fff;
 }
 
+#top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 10px 0;
+  background: linear-gradient(90deg, #00b3b3, #00cccc);
+  font-family: 'Open Sans', sans-serif;
+}
+
+body.dark-mode #top-nav {
+  background: linear-gradient(90deg, #006666, #008080);
+}
+
+#top-nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+body.dark-mode #top-nav a {
+  color: #fff;
+}
+
 body.dark-mode #intro-overlay {
   background: #000;
 }
@@ -291,7 +315,7 @@ body.dark-mode #clock {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 20vw;
+  width: 20%;
   height: auto;
   z-index: 10000;
   display: none;
@@ -324,6 +348,16 @@ body.dark-mode #clock {
   font-family: 'Open Sans', sans-serif;
   font-weight: normal;
   font-size: 14px;
+}
+
+#next-level-msg {
+  margin-top: 10px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: normal;
+  font-size: 14px;
+  color: #777;
+  opacity: 0;
+  transition: opacity 500ms linear;
 }
 
 @keyframes fadeIn {
