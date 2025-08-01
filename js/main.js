@@ -837,7 +837,7 @@ function finishMode() {
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
   const texto = document.getElementById('texto-exibicao');
   if (texto) {
-    texto.style.transition = 'opacity 1500ms linear';
+    texto.style.transition = 'opacity 1000ms linear';
     texto.style.opacity = '0';
   }
   clearInterval(timerInterval);
@@ -846,7 +846,7 @@ function finishMode() {
     goHome();
     const next = selectedMode + 1;
     if (next <= 6) {
-      unlockMode(next, 1500);
+      unlockMode(next, 1000);
       const audio = document.getElementById('somModoDesbloqueado');
       if (audio) { audio.currentTime = 0; audio.play(); }
     } else {
@@ -854,7 +854,7 @@ function finishMode() {
       if (audio) { audio.currentTime = 0; audio.play(); }
       performMenuLevelUp();
     }
-  }, 1500);
+  }, 1000);
 }
 
 function nextMode() {
