@@ -75,7 +75,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   reconhecimento.onresult = (event) => {
     const transcript = event.results[event.results.length - 1][0].transcript.trim();
     const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (awaitingNextLevel && /next level/i.test(transcript)) {
+    if (awaitingNextLevel && (normCmd.includes('next level') || normCmd.includes('proximo nivel'))) {
       awaitingNextLevel = false;
       if (nextLevelCallback) {
         const cb = nextLevelCallback;
@@ -147,6 +147,7 @@ let letsPlayInterval = null;
 let awaitingRetry = false;
 let retryCallback = null;
 let tryAgainColorInterval = null;
+let levelUpReady = false;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -190,6 +191,41 @@ function updateModeIcons() {
       img.style.opacity = '0.3';
     }
   });
+  checkForMenuLevelUp();
+}
+
+function checkForMenuLevelUp() {
+  const menu = document.getElementById('menu');
+  if (!menu || menu.style.display === 'none') return;
+  const allComplete = [1,2,3,4,5,6].every(m => completedModes[m]);
+  if (allComplete && !levelUpReady) {
+    levelUpReady = true;
+    const audio = document.getElementById('somNextLevel');
+    if (audio) { audio.currentTime = 0; audio.play(); }
+    awaitingNextLevel = true;
+    nextLevelCallback = performMenuLevelUp;
+    if (reconhecimento) {
+      reconhecimentoAtivo = true;
+      reconhecimento.lang = 'en-US';
+      reconhecimento.start();
+    }
+  }
+}
+
+function performMenuLevelUp() {
+  const menu = document.getElementById('menu');
+  if (!menu) return;
+  menu.style.transition = 'opacity 1000ms linear';
+  menu.style.opacity = '0';
+  setTimeout(() => {
+    pastaAtual++;
+    completedModes = {};
+    localStorage.setItem('completedModes', JSON.stringify(completedModes));
+    updateLevelIcon();
+    updateModeIcons();
+    menu.style.opacity = '1';
+    levelUpReady = false;
+  }, 1000);
 }
 
 let transitioning = false;
@@ -776,6 +812,7 @@ function goHome() {
     reconhecimento.start();
   }
   listeningForCommand = true;
+  updateModeIcons();
 }
 
 function updateClock() {

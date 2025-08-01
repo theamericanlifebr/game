@@ -218,7 +218,7 @@ body.dark-mode #clock {
 
 #mode-buttons {
   position: fixed;
-  bottom: 10px;
+  bottom: 85px;
   left: 0;
   width: 100%;
   display: flex;
@@ -228,8 +228,8 @@ body.dark-mode #clock {
 }
 
 #mode-buttons img {
-  width: 60px;
-  height: 60px;
+  width: 90px;
+  height: 90px;
   cursor: pointer;
   opacity: 0.35;
   transition: opacity 0.2s linear;
