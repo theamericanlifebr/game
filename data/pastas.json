@@ -5,85 +5,34 @@ const pastas = {
   1: `
   
   
-Eu sou#I am
-Você é#You are
-Ele é#He is
-Estou feliz#I am happy
-Estou triste#I am sad
-Eu penso muito#I think a lot
-Eu gosto disso#I like this
-Eu amo você#I love you
-Estou cansado#I am tired
-Estou bravo#I am angry
-Eu estou com medo#I am afraid
-Estou bem#I am fine
-Eu tenho um amigo#I have a friend
-Ela é legal#She is nice
-Ele está aqui#He is here
-Nós somos felizes#We are happy
-Eles são meus pais#They are my parents
-Isso é meu#This is mine
-Isso é seu#This is yours
-Isso é um gato#This is a cat
-Isso é um cachorro#This is a dog
-Isso é um livro#This is a book
-Isso é uma casa#This is a house
-Ela é#She is
-Isso é#It is
-Nós somos#We are
-Eles são#They are
-Eu gosto#I like
-Você gosta#You like
-Ele gosta#He likes
-Ela gosta#She likes
-Nós gostamos#We like
-Eles gostam#They like
-Eu tenho#I have
-Você tem#You have
-Ele tem#He has
-Ela tem#She has
-Nós temos#We have
-Eles têm#They have
-Eu falo#I talk
-Bom dia#Good morning
-Boa tarde#Good afternoon
-Boa noite#Good evening
-Oi#Hi
-Olá#Hello
-Tchau#Bye
-Até logo#See you later
-Como vai você#How are you
-Estou bem#I am fine
-Muito obrigado#Thank you very much
-Você fala#You talk
-Ele fala#He talks
-Ela fala#She talks
-Nós falamos#We talk
-Eles falam#They talk
-Eu vejo#I see
-Você vê#You see
-Ele vê#He sees
-Ela vê#She sees
-Nós vemos#We see
-Eles veem#They see
-Eu ouço#I hear
-Você ouve#You hear
-Ele ouve#He hears
-Ela ouve#She hears
-Nós ouvimos#We hear
-Eles ouvem#They hear
-Eu sei#I know
-Você sabe#You know
-Ele sabe#He knows
-Ela sabe#She knows
-Nós sabemos#We know
-Eles sabem#They know
-Eu preciso#I need
-Você precisa#You need
-Ele precisa#He needs
-Ela precisa#She needs
-Nós precisamos#We need
-
+Eu gosto gosto de pizza#I like like pizza
+Você gosta de música#You like music
+Nós gostamos de cachorros#We like dogs
+Eles gostam de livros#They like books
+Eu como pão#I eat bread
+Você bebe água#You drink water
+Nós jogamos futebol#We play soccer
+Eles assistem TV#They watch TV
+Eu amo café#I love coffee
+Você lê um livro#You read a book
+Nós vamos para escola#We go to school
+Eles andam para casa#They walk home
+Eu tenho um celular#I have a phone
+Você tem um carro#You have a car
+Nós temos amigos#We have friends
+Eles têm uma casa#They have a house
+Eu vejo um gato#I see a cat
+Você vê um pássaro#You see a bird
+Nós precisamos de ajuda#We need help
+Eles querem comida#They want food
+Eu vejo o pássaro#I see the bird
+Você abre a porta#You open the door
+Nós fechamos a janela#We close the window
+Eles limpam o quarto#They clean the room
+Eu cozinho arroz#I cook rice
+Você lava suas mãos#You wash your hands
+Nós estudamos inglês#We study English
+Eles jogam jogos#They play games
 
 
   
@@ -6502,3 +6451,4 @@ Quase nenhum deles voltou#Scarcely any of them came back
 
 
 }
+
