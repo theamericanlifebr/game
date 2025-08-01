@@ -87,7 +87,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
       return;
     }
-    if (awaitingNextLevel && (normCmd.includes('next level') || normCmd.includes('proximo nivel'))) {
+    if (awaitingNextLevel) {
       awaitingNextLevel = false;
       if (nextLevelCallback) {
         const cb = nextLevelCallback;
@@ -253,7 +253,7 @@ function performMenuLevelUp() {
   setTimeout(() => {
     pastaAtual++;
     completedModes = {};
-    unlockedModes = {};
+    unlockedModes = { 1: true };
     localStorage.setItem('completedModes', JSON.stringify(completedModes));
     localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
     updateLevelIcon();
@@ -837,24 +837,38 @@ function finishMode() {
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
   const texto = document.getElementById('texto-exibicao');
   if (texto) {
-    texto.style.transition = 'opacity 1500ms linear';
+    texto.style.transition = 'opacity 1000ms linear';
     texto.style.opacity = '0';
   }
   clearInterval(timerInterval);
   clearInterval(prizeTimer);
   setTimeout(() => {
-    goHome();
     const next = selectedMode + 1;
-    if (next <= 6) {
-      unlockMode(next, 1500);
-      const audio = document.getElementById('somModoDesbloqueado');
-      if (audio) { audio.currentTime = 0; audio.play(); }
+    if (selectedMode < 6) {
+      if (next <= 6) {
+        unlockMode(next, 500);
+        const audio = document.getElementById('somModoDesbloqueado');
+        if (audio) { audio.currentTime = 0; audio.play(); }
+      }
+      if (texto) {
+        texto.style.transition = 'opacity 0ms linear';
+        texto.style.opacity = '1';
+      }
+      continuar();
     } else {
+      goHome();
       const audio = document.getElementById('somNivelDesbloqueado');
       if (audio) { audio.currentTime = 0; audio.play(); }
-      performMenuLevelUp();
+      awaitingNextLevel = true;
+      nextLevelCallback = performMenuLevelUp;
+      levelUpReady = true;
+      if (reconhecimento) {
+        reconhecimentoAtivo = true;
+        reconhecimento.lang = 'en-US';
+        reconhecimento.start();
+      }
     }
-  }, 1500);
+  }, 1000);
 }
 
 function nextMode() {
