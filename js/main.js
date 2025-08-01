@@ -141,7 +141,7 @@ let mostrarTexto = 'pt';
 let voz = 'en';
 let esperadoLang = 'pt';
 let timerInterval = null;
-const TOTAL_FRASES = 24;
+const TOTAL_FRASES = 25;
 let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
 const INITIAL_POINTS = 3500;
@@ -378,7 +378,7 @@ function showMode1Intro(callback) {
   const overlay = document.getElementById('intro-overlay');
   const audio = document.getElementById('somModo1Intro');
   const img = document.getElementById('intro-image');
-  points = INITIAL_POINTS;
+  points = 0;
   atualizarBarraProgresso();
   img.style.animation = 'none';
   img.style.transition = 'none';
@@ -555,10 +555,17 @@ function beginGame() {
       reconhecimentoAtivo = true;
       reconhecimento.start();
     }
-    points = INITIAL_POINTS;
-    premioBase = 4000;
-    premioDec = 1;
-    penaltyFactor = 0.5;
+    if (selectedMode === 1) {
+      points = 0;
+      premioBase = 1000;
+      premioDec = 0;
+      penaltyFactor = 0;
+    } else {
+      points = INITIAL_POINTS;
+      premioBase = 4000;
+      premioDec = 1;
+      penaltyFactor = 0.5;
+    }
     carregarFrases();
   };
 
@@ -719,6 +726,23 @@ function verificarResposta() {
     atualizarBarraProgresso();
     return;
   }
+  const resultado = document.getElementById("resultado");
+  tentativasTotais++;
+  const elapsed = Date.now() - prizeStart;
+  const premioAtual = premioBase - elapsed * premioDec;
+
+  if (selectedMode === 1) {
+    document.getElementById("somAcerto").play();
+    acertosTotais++;
+    resultado.textContent = '';
+    points += 1000;
+    flashSuccess(() => {
+      continuar();
+    });
+    atualizarBarraProgresso();
+    return;
+  }
+
   const [pt, en] = frasesArr[fraseIndex];
 
   const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
@@ -732,12 +756,6 @@ function verificarResposta() {
     normalizadoResp === normalizadoEsp ||
     ehQuaseCorreto(normalizadoResp, normalizadoEsp) ||
     ehQuaseCorretoPalavras(resposta, esperado);
-
-  const resultado = document.getElementById("resultado");
-  const acertosDiv = document.getElementById("acertos");
-  tentativasTotais++;
-  const elapsed = Date.now() - prizeStart;
-  const premioAtual = premioBase - elapsed * premioDec;
 
   if (correto) {
     document.getElementById("somAcerto").play();
@@ -970,7 +988,7 @@ window.onload = async () => {
       clearInterval(timerInterval);
       clearInterval(prizeTimer);
       pastaAtual++;
-      points = INITIAL_POINTS;
+      points = selectedMode === 1 ? 0 : INITIAL_POINTS;
       updateLevelIcon();
       beginGame();
     }
