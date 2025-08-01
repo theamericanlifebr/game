@@ -75,6 +75,18 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   reconhecimento.onresult = (event) => {
     const transcript = event.results[event.results.length - 1][0].transcript.trim();
     const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (ilifeActive) {
+      ilifeActive = false;
+      localStorage.setItem('ilifeDone', 'true');
+      const screen = document.getElementById('ilife-screen');
+      const menu = document.getElementById('menu');
+      if (screen) screen.style.display = 'none';
+      if (menu) menu.style.display = 'flex';
+      if (!tutorialDone) {
+        startTutorial();
+      }
+      return;
+    }
     if (awaitingNextLevel && (normCmd.includes('next level') || normCmd.includes('proximo nivel'))) {
       awaitingNextLevel = false;
       if (nextLevelCallback) {
@@ -150,6 +162,8 @@ let tryAgainColorInterval = null;
 let levelUpReady = false;
 let tutorialInProgress = false;
 let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
+let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
+let ilifeActive = false;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -179,7 +193,12 @@ const modeIntros = {
 function updateLevelIcon() {
   const icon = document.getElementById('nivel-indicador');
   if (icon) {
-    icon.src = `selos_niveis/level%20${pastaAtual}.png`;
+    icon.style.transition = 'opacity 1000ms linear';
+    icon.style.opacity = '0';
+    setTimeout(() => {
+      icon.src = `selos_niveis/level%20${pastaAtual}.png`;
+      icon.style.opacity = '1';
+    }, 1000);
   }
   localStorage.setItem('pastaAtual', pastaAtual);
 }
@@ -892,7 +911,13 @@ window.onload = async () => {
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
-  if (!tutorialDone) {
+  if (!ilifeDone) {
+    const menu = document.getElementById('menu');
+    const screen = document.getElementById('ilife-screen');
+    if (menu) menu.style.display = 'none';
+    if (screen) screen.style.display = 'flex';
+    ilifeActive = true;
+  } else if (!tutorialDone) {
     startTutorial();
   } else {
     const logoTop = document.getElementById('logo-top');
