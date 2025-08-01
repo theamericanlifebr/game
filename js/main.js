@@ -87,7 +87,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
       return;
     }
-    if (awaitingNextLevel && (normCmd.includes('next level') || normCmd.includes('proximo nivel'))) {
+    if (awaitingNextLevel) {
       awaitingNextLevel = false;
       if (nextLevelCallback) {
         const cb = nextLevelCallback;
@@ -229,8 +229,8 @@ function checkForMenuLevelUp() {
   if (tutorialInProgress) return;
   const menu = document.getElementById('menu');
   if (!menu || menu.style.display === 'none') return;
-  const allComplete = [1,2,3,4,5,6].every(m => completedModes[m]);
-  if (allComplete && !levelUpReady) {
+  const ready = unlockedModes[6];
+  if (ready && !levelUpReady) {
     levelUpReady = true;
     const audio = document.getElementById('somNivelDesbloqueado');
     if (audio) { audio.currentTime = 0; audio.play(); }
@@ -253,7 +253,7 @@ function performMenuLevelUp() {
   setTimeout(() => {
     pastaAtual++;
     completedModes = {};
-    unlockedModes = {};
+    unlockedModes = { 1: true };
     localStorage.setItem('completedModes', JSON.stringify(completedModes));
     localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
     updateLevelIcon();
@@ -835,26 +835,28 @@ function finishMode() {
   if (completedModes[selectedMode]) return;
   completedModes[selectedMode] = true;
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
-  const texto = document.getElementById('texto-exibicao');
-  if (texto) {
-    texto.style.transition = 'opacity 1000ms linear';
-    texto.style.opacity = '0';
-  }
-  clearInterval(timerInterval);
-  clearInterval(prizeTimer);
-  setTimeout(() => {
-    goHome();
-    const next = selectedMode + 1;
-    if (next <= 6) {
-      unlockMode(next, 1000);
-      const audio = document.getElementById('somModoDesbloqueado');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-    } else {
-      const audio = document.getElementById('somNivelDesbloqueado');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-      performMenuLevelUp();
+  const next = selectedMode + 1;
+
+  if (next <= 6) {
+    unlockMode(next, 500);
+    const audio = document.getElementById('somModoDesbloqueado');
+    if (audio) { audio.currentTime = 0; audio.play(); }
+
+    if (selectedMode === 5) {
+      setTimeout(() => {
+        goHome();
+        const niv = document.getElementById('somNivelDesbloqueado');
+        if (niv) { niv.currentTime = 0; niv.play(); }
+        checkForMenuLevelUp();
+      }, 500);
     }
-  }, 1000);
+  } else {
+    const audio = document.getElementById('somNivelDesbloqueado');
+    if (audio) { audio.currentTime = 0; audio.play(); }
+    performMenuLevelUp();
+  }
+
+  updateModeIcons();
 }
 
 function nextMode() {
