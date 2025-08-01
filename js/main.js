@@ -193,12 +193,12 @@ const modeIntros = {
 function updateLevelIcon() {
   const icon = document.getElementById('nivel-indicador');
   if (icon) {
-    icon.style.transition = 'opacity 1000ms linear';
+    icon.style.transition = 'opacity 500ms linear';
     icon.style.opacity = '0';
     setTimeout(() => {
       icon.src = `selos_niveis/level%20${pastaAtual}.png`;
       icon.style.opacity = '1';
-    }, 1000);
+    }, 500);
   }
   localStorage.setItem('pastaAtual', pastaAtual);
 }
@@ -235,17 +235,17 @@ function checkForMenuLevelUp() {
 }
 
 function performMenuLevelUp() {
-  const menu = document.getElementById('menu');
-  if (!menu) return;
-  menu.style.transition = 'opacity 1000ms linear';
-  menu.style.opacity = '0';
+  const icons = document.querySelectorAll('#menu-modes img');
+  icons.forEach(img => {
+    img.style.transition = 'opacity 1000ms linear';
+    img.style.opacity = '0.3';
+  });
   setTimeout(() => {
     pastaAtual++;
     completedModes = {};
     localStorage.setItem('completedModes', JSON.stringify(completedModes));
     updateLevelIcon();
     updateModeIcons();
-    menu.style.opacity = '1';
     levelUpReady = false;
   }, 1000);
 }
@@ -551,7 +551,11 @@ function beginGame() {
       break;
     }
     if (reconhecimento) {
-      reconhecimento.lang = esperadoLang === 'pt' ? 'pt-BR' : 'en-US';
+      if (selectedMode === 1) {
+        reconhecimento.lang = 'en-US';
+      } else {
+        reconhecimento.lang = esperadoLang === 'pt' ? 'pt-BR' : 'en-US';
+      }
       reconhecimentoAtivo = true;
       reconhecimento.start();
     }
