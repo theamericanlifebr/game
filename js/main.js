@@ -133,7 +133,8 @@ const TOTAL_FRASES = 24;
 let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
 const INITIAL_POINTS = 3500;
-const NEXT_MODE_THRESHOLD = 24999;
+const COMPLETION_THRESHOLD = 25000;
+let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
 let points = INITIAL_POINTS;
 let premioBase = 4000;
 let premioDec = 1;
@@ -181,9 +182,13 @@ function updateLevelIcon() {
 }
 
 function updateModeIcons() {
-  document.querySelectorAll('#mode-buttons img').forEach(img => {
+  document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     const mode = parseInt(img.dataset.mode, 10);
-    img.style.opacity = mode === selectedMode ? '1' : '0.35';
+    if (completedModes[mode]) {
+      img.style.opacity = '1';
+    } else {
+      img.style.opacity = '0.3';
+    }
   });
 }
 
@@ -681,6 +686,9 @@ function verificarResposta() {
     acertosTotais++;
     resultado.textContent = '';
     points += premioAtual;
+    if (selectedMode === 5) {
+      points += 1000;
+    }
     flashSuccess(() => {
       continuar();
     });
@@ -696,7 +704,7 @@ function verificarResposta() {
     flashError(esperado, () => {
       input.disabled = false;
       bloqueado = false;
-      points -= elapsed * penaltyFactor;
+      points = Math.max(0, points - elapsed * penaltyFactor);
       continuar();
     });
   }
@@ -705,7 +713,7 @@ function verificarResposta() {
 }
 
 function continuar() {
-  if (points >= NEXT_MODE_THRESHOLD || transitioning) {
+  if (transitioning) {
     return;
   }
   fraseIndex++;
@@ -720,57 +728,10 @@ function atualizarBarraProgresso() {
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
   filled.style.backgroundColor = calcularCor(points);
-  if (points <= 0) {
-    showTryAgain();
-  }
-  if (points >= NEXT_MODE_THRESHOLD) {
-    nextMode();
-  }
-}
-
-function showTryAgain() {
-  if (reconhecimento) {
-    reconhecimentoAtivo = false;
-    reconhecimento.stop();
-  }
-  clearInterval(timerInterval);
-  clearInterval(prizeTimer);
-  const msg = document.getElementById('nivel-mensagem');
-  msg.textContent = 'Try Again';
-  msg.style.display = 'block';
-  msg.style.color = 'red';
-  startTryAgainAnimation();
-
-  const restart = () => {
-    stopTryAgainAnimation();
-    msg.style.display = 'none';
-    points = INITIAL_POINTS;
-    carregarFrases();
-    if (reconhecimento) {
-      reconhecimentoAtivo = true;
-      reconhecimento.lang = esperadoLang === 'pt' ? 'pt-BR' : 'en-US';
-      try { reconhecimento.start(); } catch (e) {}
-    }
-  };
-
-  const handler = (e) => {
-    if (e.key.toLowerCase() === 't') {
-      document.removeEventListener('keydown', handler);
-      awaitingRetry = false;
-      restart();
-    }
-  };
-  document.addEventListener('keydown', handler);
-
-  if (reconhecimento) {
-    awaitingRetry = true;
-    retryCallback = () => {
-      document.removeEventListener('keydown', handler);
-      restart();
-    };
-    reconhecimentoAtivo = true;
-    reconhecimento.lang = 'en-US';
-    try { reconhecimento.start(); } catch (e) {}
+  if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+    completedModes[selectedMode] = true;
+    localStorage.setItem('completedModes', JSON.stringify(completedModes));
+    updateModeIcons();
   }
 }
 
@@ -817,6 +778,13 @@ function goHome() {
   listeningForCommand = true;
 }
 
+function updateClock() {
+  const el = document.getElementById('clock');
+  if (!el) return;
+  const now = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
+  el.textContent = now;
+}
+
 
 window.onload = async () => {
   const saved = parseInt(localStorage.getItem('pastaAtual'), 10);
@@ -824,8 +792,10 @@ window.onload = async () => {
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
+  updateClock();
+  setInterval(updateClock, 1000);
 
-  document.querySelectorAll('#mode-buttons img').forEach(img => {
+  document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     img.addEventListener('click', () => {
       const modo = parseInt(img.dataset.mode, 10);
       startGame(modo);
