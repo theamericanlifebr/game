@@ -148,6 +148,7 @@ let awaitingRetry = false;
 let retryCallback = null;
 let tryAgainColorInterval = null;
 let levelUpReady = false;
+let tutorialRunning = false;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -195,12 +196,13 @@ function updateModeIcons() {
 }
 
 function checkForMenuLevelUp() {
+  if (tutorialRunning) return;
   const menu = document.getElementById('menu');
   if (!menu || menu.style.display === 'none') return;
   const allComplete = [1,2,3,4,5,6].every(m => completedModes[m]);
   if (allComplete && !levelUpReady) {
     levelUpReady = true;
-    const audio = document.getElementById('somNextLevel');
+    const audio = document.getElementById('somNivelDesbloqueado');
     if (audio) { audio.currentTime = 0; audio.play(); }
     awaitingNextLevel = true;
     nextLevelCallback = performMenuLevelUp;
@@ -765,9 +767,21 @@ function atualizarBarraProgresso() {
   filled.style.width = perc + '%';
   filled.style.backgroundColor = calcularCor(points);
   if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
-    completedModes[selectedMode] = true;
-    localStorage.setItem('completedModes', JSON.stringify(completedModes));
-    updateModeIcons();
+    const unlocked = Object.values(completedModes).filter(Boolean).length;
+    if (unlocked >= 5) {
+      const audio = document.getElementById('somNivelDesbloqueado');
+      if (audio) { audio.currentTime = 0; audio.play(); }
+      completedModes[selectedMode] = true;
+      localStorage.setItem('completedModes', JSON.stringify(completedModes));
+      updateModeIcons();
+      goHome();
+    } else {
+      const audio = document.getElementById('somModoDesbloqueado');
+      if (audio) { audio.currentTime = 0; audio.play(); }
+      completedModes[selectedMode] = true;
+      localStorage.setItem('completedModes', JSON.stringify(completedModes));
+      updateModeIcons();
+    }
   }
 }
 
@@ -815,11 +829,50 @@ function goHome() {
   updateModeIcons();
 }
 
-function updateClock() {
-  const el = document.getElementById('clock');
-  if (!el) return;
-  const now = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
-  el.textContent = now;
+
+function startTutorial() {
+  tutorialRunning = true;
+  const welcome = document.getElementById('somWelcome');
+  if (welcome) setTimeout(() => { welcome.currentTime = 0; welcome.play(); }, 1);
+
+  const tutorialLogo = document.getElementById('tutorial-logo');
+  const logoTop = document.getElementById('logo-top');
+  const levelIcon = document.getElementById('nivel-indicador');
+  const menuContainer = document.getElementById('menu-modes');
+  const menuIcons = document.querySelectorAll('#menu-modes img');
+
+  if (levelIcon) levelIcon.style.display = 'none';
+  if (menuContainer) menuContainer.style.display = 'none';
+  if (tutorialLogo) {
+    tutorialLogo.style.display = 'block';
+    tutorialLogo.style.width = '20vw';
+    tutorialLogo.style.transition = 'width 750ms linear';
+    setTimeout(() => { tutorialLogo.style.width = '30vw'; }, 0);
+    setTimeout(() => { tutorialLogo.style.display = 'none'; }, 751);
+  }
+
+  menuIcons.forEach(img => { img.style.opacity = '0'; });
+
+  setTimeout(() => {
+    if (menuContainer) menuContainer.style.display = 'grid';
+    menuIcons.forEach(img => {
+      img.style.transition = 'opacity 2000ms linear';
+      img.style.opacity = '0.3';
+    });
+  }, 4000);
+
+  const mode1 = document.querySelector('#menu-modes img[data-mode="1"]');
+  setTimeout(() => {
+    if (mode1) { mode1.style.transition = 'opacity 300ms linear'; mode1.style.opacity = '1'; }
+  }, 7500);
+
+  setTimeout(() => {
+    if (mode1) { mode1.style.transition = 'opacity 250ms linear'; mode1.style.opacity = '0.3'; }
+  }, 7850);
+
+  setTimeout(() => { if (levelIcon) levelIcon.style.display = 'block'; }, 11420);
+  setTimeout(() => { if (logoTop) logoTop.style.display = 'block'; }, 11421);
+  setTimeout(() => { tutorialRunning = false; checkForMenuLevelUp(); }, 12000);
 }
 
 
@@ -829,8 +882,16 @@ window.onload = async () => {
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
-  updateClock();
-  setInterval(updateClock, 1000);
+  const tutorialSeen = localStorage.getItem('tutorialShown') === '1';
+  if (!tutorialSeen) {
+    startTutorial();
+    localStorage.setItem('tutorialShown', '1');
+  } else {
+    const logoTop = document.getElementById('logo-top');
+    const levelIcon = document.getElementById('nivel-indicador');
+    if (logoTop) logoTop.style.display = 'block';
+    if (levelIcon) levelIcon.style.display = 'block';
+  }
 
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     img.addEventListener('click', () => {

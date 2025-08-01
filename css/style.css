@@ -43,17 +43,6 @@ body.dark-mode #intro-overlay {
   height: 100vh;
 }
 
-#clock {
-  font-size: clamp(40px, 8vw, 80px);
-  font-family: 'Open Sans', sans-serif;
-  font-weight: normal;
-  color: #000;
-  text-align: center;
-}
-
-body.dark-mode #clock {
-  color: #fff;
-}
 
 #menu-modes {
   display: grid;
@@ -241,9 +230,6 @@ body.dark-mode #clock {
     height: 40px;
   }
 
-  #clock {
-    font-size: 12vw;
-  }
 
   #menu-modes {
     grid-template-columns: repeat(3, 1fr);
@@ -264,4 +250,26 @@ body.dark-mode #clock {
 @keyframes modeZoom {
   from { transform: scale(0.8); }
   to { transform: scale(1); }
+}
+
+#logo-top {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: auto;
+  z-index: 1000;
+  display: none;
+}
+
+#tutorial-logo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20vw;
+  height: auto;
+  z-index: 10000;
+  display: none;
 }
