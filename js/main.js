@@ -148,6 +148,8 @@ let awaitingRetry = false;
 let retryCallback = null;
 let tryAgainColorInterval = null;
 let levelUpReady = false;
+let tutorialInProgress = false;
+let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -195,6 +197,7 @@ function updateModeIcons() {
 }
 
 function checkForMenuLevelUp() {
+  if (tutorialInProgress) return;
   const menu = document.getElementById('menu');
   if (!menu || menu.style.display === 'none') return;
   const allComplete = [1,2,3,4,5,6].every(m => completedModes[m]);
@@ -835,6 +838,8 @@ function updateClock() {
 }
 
 function startTutorial() {
+  tutorialInProgress = true;
+  localStorage.setItem('tutorialDone', 'true');
   const welcome = document.getElementById('somWelcome');
   if (welcome) setTimeout(() => { welcome.currentTime = 0; welcome.play(); }, 1);
 
@@ -842,8 +847,10 @@ function startTutorial() {
   const logoTop = document.getElementById('logo-top');
   const levelIcon = document.getElementById('nivel-indicador');
   const menuIcons = document.querySelectorAll('#menu-modes img');
+  const menuLogo = document.getElementById('menu-logo');
 
   if (levelIcon) levelIcon.style.display = 'none';
+  if (menuLogo) menuLogo.style.display = 'none';
   if (tutorialLogo) {
     tutorialLogo.style.display = 'block';
     tutorialLogo.style.width = '20vw';
@@ -871,7 +878,11 @@ function startTutorial() {
   }, 7850);
 
   setTimeout(() => { if (levelIcon) levelIcon.style.display = 'block'; }, 11420);
-  setTimeout(() => { if (logoTop) logoTop.style.display = 'block'; }, 11421);
+  setTimeout(() => {
+    if (logoTop) logoTop.style.display = 'block';
+    if (menuLogo) menuLogo.style.display = 'block';
+    tutorialInProgress = false;
+  }, 11421);
 }
 
 
@@ -881,9 +892,16 @@ window.onload = async () => {
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
-  updateClock();
-  setInterval(updateClock, 1000);
-  startTutorial();
+  if (!tutorialDone) {
+    startTutorial();
+  } else {
+    const logoTop = document.getElementById('logo-top');
+    const levelIcon = document.getElementById('nivel-indicador');
+    const menuLogo = document.getElementById('menu-logo');
+    if (logoTop) logoTop.style.display = 'block';
+    if (levelIcon) levelIcon.style.display = 'block';
+    if (menuLogo) menuLogo.style.display = 'block';
+  }
 
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     img.addEventListener('click', () => {

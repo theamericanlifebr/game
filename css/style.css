@@ -51,6 +51,15 @@ body.dark-mode #intro-overlay {
   text-align: center;
 }
 
+#menu-logo {
+  width: 100px;
+  height: auto;
+}
+
+body.dark-mode #menu-logo {
+  filter: invert(1);
+}
+
 body.dark-mode #clock {
   color: #fff;
 }
