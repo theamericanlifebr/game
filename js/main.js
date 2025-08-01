@@ -105,6 +105,11 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
     } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
       points += 25000;
+      if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
+        const audio = document.getElementById('somNextLevel');
+        if (audio) { audio.currentTime = 0; audio.play(); }
+        nextLevelSoundPlayed = true;
+      }
       atualizarBarraProgresso();
     } else if (listeningForCommand) {
       listeningForCommand = false;
@@ -167,6 +172,7 @@ let tutorialInProgress = false;
 let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
+let nextLevelSoundPlayed = false;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -559,6 +565,7 @@ function beginGame() {
     }
     const texto = document.getElementById('texto-exibicao');
     if (texto) texto.style.opacity = '1';
+    nextLevelSoundPlayed = false;
     updateLevelIcon();
     updateModeIcons();
     switch (selectedMode) {
@@ -769,9 +776,14 @@ function verificarResposta() {
   const bonusPhrase = resposta.toLowerCase().replace(/\s+/g, '');
   if (bonusPhrase === 'Justiça de Deus' || bonusPhrase === 'getpointslife') {
     points += 25000;
+    if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
+      const audio = document.getElementById('somNextLevel');
+      if (audio) { audio.currentTime = 0; audio.play(); }
+      nextLevelSoundPlayed = true;
+    }
     input.value = '';
     atualizarBarraProgresso();
-    if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+    if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode] && selectedMode !== 6) {
       finishMode();
     }
     return;
@@ -817,7 +829,12 @@ function verificarResposta() {
     if (selectedMode === 5) {
       points += 1000;
     }
-    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
+    if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
+      const audio = document.getElementById('somNextLevel');
+      if (audio) { audio.currentTime = 0; audio.play(); }
+      nextLevelSoundPlayed = true;
+    }
+    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode] && selectedMode !== 6;
     flashSuccess(() => {
       if (reached) finishMode();
       else continuar();
@@ -1032,6 +1049,11 @@ window.onload = async () => {
   }
 
   document.addEventListener('keydown', e => {
+    if (ilifeActive && e.code === 'Space') {
+      const lock = document.getElementById('somLock');
+      if (lock) { lock.currentTime = 0; lock.play(); }
+      return;
+    }
     if (e.key === 'r') falarFrase();
     if (e.key.toLowerCase() === 'h') toggleDarkMode();
     if (e.key.toLowerCase() === 'i') {
