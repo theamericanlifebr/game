@@ -15,7 +15,71 @@
     <a href="custom.html">custom</a>
   </nav>
   <div id="custom-content" style="text-align:center;margin-top:50px;">
-    <h2>Tempo total jogado: <span id="total-time">0s</span></h2>
+    <div class="mode-block">
+      <h1 class="custom-title">Modo 1 - Resultados</h1>
+      <div class="custom-info">Frases totais: <span id="m1-total">0</span></div>
+      <div class="custom-info">Tempo de jogo: <span id="m1-time">0s</span></div>
+      <div class="custom-info">Frases acertadas: <span id="m1-correct">0</span></div>
+      <div class="custom-info">Frases erradas: <span id="m1-wrong">0</span></div>
+      <div class="custom-info">Porcentagem de acertos: <span id="m1-acc">0%</span></div>
+      <div class="custom-info">Média de tempo por frase: <span id="m1-avg">0s</span></div>
+      <div class="custom-info">Uso de reportar: <span id="m1-report">0%</span></div>
+    </div>
+
+    <div class="mode-block">
+      <h1 class="custom-title">Modo 2 - Resultados</h1>
+      <div class="custom-info">Frases totais: <span id="m2-total">0</span></div>
+      <div class="custom-info">Tempo de jogo: <span id="m2-time">0s</span></div>
+      <div class="custom-info">Frases acertadas: <span id="m2-correct">0</span></div>
+      <div class="custom-info">Frases erradas: <span id="m2-wrong">0</span></div>
+      <div class="custom-info">Porcentagem de acertos: <span id="m2-acc">0%</span></div>
+      <div class="custom-info">Média de tempo por frase: <span id="m2-avg">0s</span></div>
+      <div class="custom-info">Uso de reportar: <span id="m2-report">0%</span></div>
+    </div>
+
+    <div class="mode-block">
+      <h1 class="custom-title">Modo 3 - Resultados</h1>
+      <div class="custom-info">Frases totais: <span id="m3-total">0</span></div>
+      <div class="custom-info">Tempo de jogo: <span id="m3-time">0s</span></div>
+      <div class="custom-info">Frases acertadas: <span id="m3-correct">0</span></div>
+      <div class="custom-info">Frases erradas: <span id="m3-wrong">0</span></div>
+      <div class="custom-info">Porcentagem de acertos: <span id="m3-acc">0%</span></div>
+      <div class="custom-info">Média de tempo por frase: <span id="m3-avg">0s</span></div>
+      <div class="custom-info">Uso de reportar: <span id="m3-report">0%</span></div>
+    </div>
+
+    <div class="mode-block">
+      <h1 class="custom-title">Modo 4 - Resultados</h1>
+      <div class="custom-info">Frases totais: <span id="m4-total">0</span></div>
+      <div class="custom-info">Tempo de jogo: <span id="m4-time">0s</span></div>
+      <div class="custom-info">Frases acertadas: <span id="m4-correct">0</span></div>
+      <div class="custom-info">Frases erradas: <span id="m4-wrong">0</span></div>
+      <div class="custom-info">Porcentagem de acertos: <span id="m4-acc">0%</span></div>
+      <div class="custom-info">Média de tempo por frase: <span id="m4-avg">0s</span></div>
+      <div class="custom-info">Uso de reportar: <span id="m4-report">0%</span></div>
+    </div>
+
+    <div class="mode-block">
+      <h1 class="custom-title">Modo 5 - Resultados</h1>
+      <div class="custom-info">Frases totais: <span id="m5-total">0</span></div>
+      <div class="custom-info">Tempo de jogo: <span id="m5-time">0s</span></div>
+      <div class="custom-info">Frases acertadas: <span id="m5-correct">0</span></div>
+      <div class="custom-info">Frases erradas: <span id="m5-wrong">0</span></div>
+      <div class="custom-info">Porcentagem de acertos: <span id="m5-acc">0%</span></div>
+      <div class="custom-info">Média de tempo por frase: <span id="m5-avg">0s</span></div>
+      <div class="custom-info">Uso de reportar: <span id="m5-report">0%</span></div>
+    </div>
+
+    <div class="mode-block">
+      <h1 class="custom-title">Modo 6 - Resultados</h1>
+      <div class="custom-info">Frases totais: <span id="m6-total">0</span></div>
+      <div class="custom-info">Tempo de jogo: <span id="m6-time">0s</span></div>
+      <div class="custom-info">Frases acertadas: <span id="m6-correct">0</span></div>
+      <div class="custom-info">Frases erradas: <span id="m6-wrong">0</span></div>
+      <div class="custom-info">Porcentagem de acertos: <span id="m6-acc">0%</span></div>
+      <div class="custom-info">Média de tempo por frase: <span id="m6-avg">0s</span></div>
+      <div class="custom-info">Uso de reportar: <span id="m6-report">0%</span></div>
+    </div>
   </div>
   <script>
     function formatTime(ms) {
@@ -25,8 +89,25 @@
       return `${min}m ${s}s`;
     }
     document.addEventListener('DOMContentLoaded', () => {
-      const ms = parseInt(localStorage.getItem('totalTime') || '0', 10);
-      document.getElementById('total-time').textContent = formatTime(ms);
+      const all = JSON.parse(localStorage.getItem('modeStats') || '{}');
+      for (let m = 1; m <= 6; m++) {
+        const stats = all[m] || {};
+        const totalTime = stats.totalTime || 0;
+        const total = stats.totalPhrases || 0;
+        const correct = stats.correct || 0;
+        const wrong = stats.wrong || 0;
+        const report = stats.report || 0;
+        const acc = total ? ((correct / total) * 100).toFixed(2) : '0';
+        const avg = total ? formatTime(totalTime / total) : '0s';
+        const reportPerc = total ? ((report / total) * 100).toFixed(2) : '0';
+        document.getElementById(`m${m}-total`).textContent = total;
+        document.getElementById(`m${m}-time`).textContent = formatTime(totalTime);
+        document.getElementById(`m${m}-correct`).textContent = correct;
+        document.getElementById(`m${m}-wrong`).textContent = wrong;
+        document.getElementById(`m${m}-acc`).textContent = acc + '%';
+        document.getElementById(`m${m}-avg`).textContent = avg;
+        document.getElementById(`m${m}-report`).textContent = reportPerc + '%';
+      }
     });
   </script>
 </body>

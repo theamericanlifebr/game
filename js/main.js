@@ -119,8 +119,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         startGame(getHighestUnlockedMode());
       }
     } else {
-      document.getElementById("pt").value = transcript;
-      verificarResposta();
+      if (normCmd.includes('reportar') || normCmd.includes('report')) {
+        reportLastError();
+      } else {
+        document.getElementById("pt").value = transcript;
+        verificarResposta();
+      }
     }
   };
 
@@ -178,6 +182,11 @@ let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
 let sessionStart = null;
+let modeStats = JSON.parse(localStorage.getItem('modeStats') || '{}');
+let modeStartTimes = {};
+let lastWasError = false;
+let lastReward = 0;
+let lastPenalty = 0;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -203,6 +212,47 @@ const modeIntros = {
   5: { duration: 6500, img: modeImages[5], audio: 'somModo5Intro' },
   6: { duration: 6000, img: modeImages[6], audio: 'somModo6Intro' }
 };
+
+function getModeStats(mode) {
+  if (!modeStats[mode]) {
+    modeStats[mode] = { totalPhrases: 0, totalTime: 0, correct: 0, wrong: 0, report: 0 };
+  }
+  return modeStats[mode];
+}
+
+function saveModeStats() {
+  localStorage.setItem('modeStats', JSON.stringify(modeStats));
+}
+
+function recordModeTime(mode) {
+  const start = modeStartTimes[mode];
+  if (start) {
+    getModeStats(mode).totalTime += Date.now() - start;
+    delete modeStartTimes[mode];
+    saveModeStats();
+  }
+}
+
+function recordModeResult(correct) {
+  const stats = getModeStats(selectedMode);
+  stats.totalPhrases++;
+  if (correct) stats.correct++; else stats.wrong++;
+  saveModeStats();
+}
+
+function reportLastError() {
+  if (!lastWasError) return;
+  lastWasError = false;
+  acertosTotais++;
+  errosTotais = Math.max(0, errosTotais - 1);
+  points += lastReward + lastPenalty;
+  atualizarBarraProgresso();
+  const stats = getModeStats(selectedMode);
+  stats.correct++;
+  stats.wrong = Math.max(0, stats.wrong - 1);
+  stats.report++;
+  saveModeStats();
+}
 
 function updateLevelIcon() {
   const icon = document.getElementById('nivel-indicador');
@@ -412,6 +462,7 @@ function stopTryAgainAnimation() {
 }
 
 function startGame(modo) {
+  recordModeTime(selectedMode);
   selectedMode = modo;
   updateModeIcons();
   listeningForCommand = false;
@@ -584,6 +635,7 @@ function showLevelUp(callback) {
 
 function beginGame() {
   sessionStart = Date.now();
+  modeStartTimes[selectedMode] = Date.now();
   const start = () => {
     document.getElementById('visor').style.display = 'flex';
     const icon = document.getElementById('mode-icon');
@@ -839,8 +891,13 @@ function verificarResposta() {
   tentativasTotais++;
   const elapsed = Date.now() - prizeStart;
   const premioAtual = premioBase - elapsed * premioDec;
+  const penalty = elapsed * penaltyFactor;
+  lastReward = premioAtual;
+  lastPenalty = penalty;
+  lastWasError = false;
 
   if (selectedMode === 1) {
+    recordModeResult(true);
     document.getElementById("somAcerto").play();
     acertosTotais++;
     resultado.textContent = '';
@@ -870,6 +927,7 @@ function verificarResposta() {
     ehQuaseCorretoPalavras(resposta, esperado);
 
   if (correto) {
+    recordModeResult(true);
     document.getElementById("somAcerto").play();
     acertosTotais++;
     resultado.textContent = '';
@@ -884,8 +942,10 @@ function verificarResposta() {
       else continuar();
     });
   } else {
+    recordModeResult(false);
     document.getElementById("somErro").play();
     errosTotais++;
+    lastWasError = true;
     resultado.textContent = "";
     resultado.style.color = "red";
     input.value = '';
@@ -895,7 +955,7 @@ function verificarResposta() {
     flashError(esperado, () => {
       input.disabled = false;
       bloqueado = false;
-      points = Math.max(0, points - elapsed * penaltyFactor);
+      points = Math.max(0, points - penalty);
       continuar();
     });
   }
@@ -960,7 +1020,6 @@ function nextMode() {
     const current = selectedMode;
     const next = current + 1;
     const info = modeTransitions[current];
-    selectedMode = next;
     const done = () => {
       startGame(next);
       transitioning = false;
@@ -972,7 +1031,6 @@ function nextMode() {
     }
   } else {
     pastaAtual++;
-    selectedMode = 1;
     const done = () => {
       updateLevelIcon();
       startGame(1);
@@ -989,6 +1047,7 @@ function goHome() {
     localStorage.setItem('totalTime', total + (Date.now() - sessionStart));
     sessionStart = null;
   }
+  recordModeTime(selectedMode);
   document.getElementById('visor').style.display = 'none';
   document.getElementById('menu').style.display = 'flex';
   const icon = document.getElementById('mode-icon');
