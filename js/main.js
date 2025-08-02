@@ -1,4 +1,3 @@
-
 let pastas = {};
 
 function parsePastas(raw) {
@@ -13,7 +12,7 @@ async function carregarPastas() {
   const resp = await fetch('data/pastas.json');
   const text = await resp.text();
   const obj = {};
-  const regex = /(\d+):\s*([\s\S]*?)/g;
+  const regex = /(\d+):\s*`([\s\S]*?)`/g;
   let m;
   while ((m = regex.exec(text))) {
     obj[m[1]] = m[2];
@@ -211,7 +210,7 @@ function updateLevelIcon() {
     icon.style.transition = 'opacity 500ms linear';
     icon.style.opacity = '0';
     setTimeout(() => {
-      icon.src = selos_niveis/level%20${pastaAtual}.png;
+      icon.src = `selos_niveis/level%20${pastaAtual}.png`;
       icon.style.opacity = '1';
     }, 500);
   }
@@ -221,8 +220,8 @@ function updateLevelIcon() {
 function unlockMode(mode, duration = 1000) {
   unlockedModes[mode] = true;
   localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
-  document.querySelectorAll(#menu-modes img[data-mode="${mode}"], #mode-buttons img[data-mode="${mode}"]).forEach(img => {
-    img.style.transition = opacity ${duration}ms linear;
+  document.querySelectorAll(`#menu-modes img[data-mode="${mode}"], #mode-buttons img[data-mode="${mode}"]`).forEach(img => {
+    img.style.transition = `opacity ${duration}ms linear`;
     img.style.opacity = '1';
   });
 }
@@ -486,7 +485,7 @@ function showModeIntro(info, callback) {
   img.style.opacity = '1';
   img.style.transform = 'scale(0.8)';
   void img.offsetWidth;
-  img.style.transition = transform ${info.duration}ms linear;
+  img.style.transition = `transform ${info.duration}ms linear`;
   overlay.style.display = 'flex';
   startIntroProgress(info.duration);
   if (audio) {
@@ -524,7 +523,7 @@ function showModeTransition(info, callback) {
   img.style.opacity = '1';
   img.style.transform = 'scale(0.8)';
   void img.offsetWidth;
-  img.style.transition = transform ${info.duration}ms linear;
+  img.style.transition = `transform ${info.duration}ms linear`;
   overlay.style.display = 'flex';
   startIntroProgress(info.duration);
   if (audio) {
@@ -762,7 +761,7 @@ function mostrarFrase() {
   timerEl.textContent = 'Tempo: 0s';
   timerInterval = setInterval(() => {
     const secs = Math.floor((Date.now() - start) / 1000);
-    timerEl.textContent = Tempo: ${secs}s;
+    timerEl.textContent = `Tempo: ${secs}s`;
   }, 1000);
   if (prizeTimer) clearInterval(prizeTimer);
   prizeStart = Date.now();
@@ -914,7 +913,7 @@ function continuar() {
 
 function atualizarBarraProgresso() {
   const premioAtual = premioBase - (Date.now() - prizeStart) * premioDec;
-  document.getElementById('score').textContent = PREMIO (${Math.round(premioAtual)}) pontos: (${Math.round(points)});
+  document.getElementById('score').textContent = `PREMIO (${Math.round(premioAtual)}) pontos: (${Math.round(points)})`;
   const filled = document.getElementById('barra-preenchida');
   const limite = 25000;
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
@@ -1157,4 +1156,3 @@ window.onload = async () => {
     }
   });
 };
-
