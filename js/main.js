@@ -925,41 +925,81 @@ function atualizarBarraProgresso() {
   }
 }
 
+// Modifica APENAS a função finishMode()
 function finishMode() {
   if (completedModes[selectedMode]) return;
+
   completedModes[selectedMode] = true;
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
-  const next = selectedMode + 1;
 
   if (selectedMode === 6) {
     goHome();
-    setTimeout(() => {
-      const img = document.querySelector('#menu-modes img[data-mode="6"]');
-      if (img) {
-        img.style.transition = 'opacity 1000ms linear';
+    const img = document.querySelector('#menu-modes img[data-mode="6"]');
+    if (img) {
+      img.style.transition = 'opacity 500ms linear';
+      img.style.opacity = '0';
+      setTimeout(() => {
+        img.src = 'selos%20modos%20de%20jogo/modostar.png';
         img.style.opacity = '0';
-        setTimeout(() => {
-          img.src = 'selos%20modos%20de%20jogo/modostar.png';
-          img.style.opacity = '1';
-          img.addEventListener('click', handleStarClick, { once: true });
-        }, 1000);
-      }
-    }, 500);
+        img.style.transition = 'opacity 500ms linear';
+        setTimeout(() => { img.style.opacity = '1'; }, 50);
+        img.addEventListener('click', handleStarClick, { once: true });
+      }, 500);
+    }
     return;
   }
 
+  const next = selectedMode + 1;
   if (next <= 6) {
     unlockMode(next, 500);
     const audio = document.getElementById('somModoDesbloqueado');
     if (audio) { audio.currentTime = 0; audio.play(); }
-
-    if (selectedMode === 5) {
-      setTimeout(() => { continuar(); }, 500);
-    }
+    if (selectedMode === 5) setTimeout(() => continuar(), 500);
   }
-
   updateModeIcons();
 }
+
+
+function handleStarClick() {
+  const starImg = document.querySelector('#menu-modes img[data-mode="6"]');
+  const icons = document.querySelectorAll('#menu-modes img');
+
+  // Dissolve ícones modos 2 a 6 para 30%
+  icons.forEach(img => {
+    const mode = parseInt(img.dataset.mode, 10);
+    if (mode >= 2 && mode <= 6) {
+      img.style.transition = 'opacity 1000ms linear';
+      img.style.opacity = '0.3';
+    } else if (mode === 1) {
+      img.style.opacity = '1'; // verde permanece desbloqueado
+    }
+  });
+
+  // Transição do modo estrela para modo 6 padrão, dissolvendo
+  if (starImg) {
+    starImg.style.transition = 'opacity 300ms linear';
+    starImg.style.opacity = '0';
+    setTimeout(() => {
+      starImg.src = modeImages[6];
+      starImg.style.transition = 'opacity 700ms linear';
+      starImg.style.opacity = '0.3';
+    }, 300);
+  }
+
+  // Avança nível automaticamente (mesmo que tecla 'L')
+  pastaAtual++;
+  localStorage.setItem('pastaAtual', pastaAtual);
+  completedModes = {};
+  unlockedModes = { 1: true };
+  localStorage.setItem('completedModes', JSON.stringify(completedModes));
+  localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
+  updateLevelIcon();
+  updateModeIcons();
+
+  points = INITIAL_POINTS;
+  beginGame();
+}
+
 
 function handleStarClick() {
   const starImg = document.querySelector('#menu-modes img[data-mode="6"]');
@@ -1156,3 +1196,4 @@ window.onload = async () => {
     }
   });
 };
+
