@@ -108,11 +108,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
       } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
         points += 25000;
-        if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-          const audio = document.getElementById('somNextLevel');
-          if (audio) { audio.currentTime = 0; audio.play(); }
-          nextLevelSoundPlayed = true;
-        }
         atualizarBarraProgresso();
         if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
           finishMode();
@@ -180,7 +175,6 @@ let tutorialInProgress = false;
 let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
-let nextLevelSoundPlayed = false;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -591,7 +585,6 @@ function beginGame() {
     }
     const texto = document.getElementById('texto-exibicao');
     if (texto) texto.style.opacity = '1';
-    nextLevelSoundPlayed = false;
     updateLevelIcon();
     updateModeIcons();
     switch (selectedMode) {
@@ -823,11 +816,6 @@ function verificarResposta() {
   const bonusPhrase = resposta.toLowerCase().replace(/\s+/g, '');
   if (bonusPhrase === 'Justiça de Deus' || bonusPhrase === 'getpointslife') {
     points += 25000;
-    if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-      const audio = document.getElementById('somNextLevel');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-      nextLevelSoundPlayed = true;
-    }
     input.value = '';
     atualizarBarraProgresso();
     if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
@@ -869,17 +857,15 @@ function verificarResposta() {
     ehQuaseCorretoPalavras(resposta, esperado);
 
   if (correto) {
-    document.getElementById("somAcerto").play();
+    const willReachThreshold = selectedMode === 6 && points + premioAtual >= COMPLETION_THRESHOLD;
+    if (!willReachThreshold) {
+      document.getElementById("somAcerto").play();
+    }
     acertosTotais++;
     resultado.textContent = '';
     points += premioAtual;
     if (selectedMode === 5) {
       points += 1000;
-    }
-    if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-      const audio = document.getElementById('somNextLevel');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-      nextLevelSoundPlayed = true;
     }
     const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
     flashSuccess(() => {
@@ -934,12 +920,13 @@ function upgradeMode6Icon(animated = false) {
   if (modeTransitions[5]) modeTransitions[5].img = starSrc;
   document.querySelectorAll('img[data-mode="6"]').forEach(img => {
     if (animated && img.closest('#menu-modes')) {
-      img.style.transition = 'opacity 1000ms linear';
+      const duration = 751;
+      img.style.transition = `opacity ${duration}ms ease-in-out`;
       img.style.opacity = '0';
       setTimeout(() => {
         img.src = starSrc;
         img.style.opacity = '1';
-      }, 1000);
+      }, duration);
     } else {
       img.src = starSrc;
     }
@@ -955,8 +942,7 @@ function finishMode() {
   const next = selectedMode + 1;
 
   if (selectedMode === 6) {
-    goHome();
-    setTimeout(() => upgradeMode6Icon(true), 500);
+    upgradeMode6Icon(true);
     return;
   }
 
