@@ -5,7 +5,7 @@ const pastas = {
   1: `
   
   
-Eu gosto gosto de pizza#I like like pizza
+
 Você gosta de música#You like music
 Nós gostamos de cachorros#We like dogs
 Eles gostam de livros#They like books
@@ -6451,4 +6451,5 @@ Quase nenhum deles voltou#Scarcely any of them came back
 
 
 }
+
 
