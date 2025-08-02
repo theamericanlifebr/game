@@ -247,10 +247,11 @@ function checkForMenuLevelUp() {
 }
 
 function performMenuLevelUp() {
-  const icons = document.querySelectorAll('#menu-modes img');
+  const icons = document.querySelectorAll('#menu-modes img, #mode-buttons img');
   icons.forEach(img => {
-    img.style.transition = 'opacity 1000ms linear';
-    img.style.opacity = '0.3';
+    const modo = parseInt(img.dataset.mode, 10);
+    img.style.transition = 'opacity 500ms linear';
+    img.style.opacity = modo === 1 ? '1' : '0.3';
   });
   setTimeout(() => {
     pastaAtual++;
@@ -258,10 +259,15 @@ function performMenuLevelUp() {
     unlockedModes = { 1: true };
     localStorage.setItem('completedModes', JSON.stringify(completedModes));
     localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
+    document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]').forEach(img => {
+      img.src = modeImages[6];
+    });
+    points = INITIAL_POINTS;
     updateLevelIcon();
     updateModeIcons();
+    atualizarBarraProgresso();
     levelUpReady = false;
-  }, 1000);
+  }, 500);
 }
 
 function menuLevelUpSequence() {
@@ -936,13 +942,10 @@ function finishMode() {
 
   if (selectedMode === 6) {
     document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]').forEach(img => {
-      img.style.transition = 'opacity 1000ms linear';
-      img.style.opacity = '0';
-      setTimeout(() => {
-        img.src = 'selos%20modos%20de%20jogo/modostar.png';
-        img.style.opacity = '1';
-      }, 1000);
+      img.src = 'selos%20modos%20de%20jogo/modostar.png';
     });
+    levelUpReady = true;
+    goHome();
   }
 }
 
@@ -1064,6 +1067,10 @@ window.onload = async () => {
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     img.addEventListener('click', () => {
       const modo = parseInt(img.dataset.mode, 10);
+      if (modo === 6 && completedModes[6] && levelUpReady) {
+        performMenuLevelUp();
+        return;
+      }
       if (!unlockedModes[modo]) {
         const lock = document.getElementById('somLock');
         if (lock) { lock.currentTime = 0; lock.play(); }
