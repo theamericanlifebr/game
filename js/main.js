@@ -1038,6 +1038,21 @@ function startTutorial() {
     });
   }, 4000);
 
+  setTimeout(() => {
+    const seq = [1, 2, 3, 4, 5, 6].map(n => document.querySelector(`#menu-modes img[data-mode="${n}"]`));
+    seq.forEach((img, idx) => {
+      setTimeout(() => {
+        if (!img) return;
+        img.style.transition = 'opacity 200ms linear';
+        img.style.opacity = '0.99';
+        setTimeout(() => {
+          img.style.transition = 'opacity 200ms linear';
+          img.style.opacity = '0.3';
+        }, 200);
+      }, idx * 450);
+    });
+  }, 7000);
+
   const mode1 = document.querySelector('#menu-modes img[data-mode="1"]');
 
   setTimeout(() => { if (levelIcon) levelIcon.style.display = 'block'; }, 11420);

@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: #F8F8FA;
+  background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%);
   font-family: 'Open Sans', sans-serif;
 }
 
