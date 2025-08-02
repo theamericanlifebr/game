@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-mode">
+  <nav id="top-nav">
+    <a href="index.html">home</a>
+    <a href="#">fun</a>
+    <a href="#">play</a>
+    <a href="custom.html">custom</a>
+  </nav>
+  <div id="custom-content" style="text-align:center;margin-top:50px;">
+    <h2>Tempo total jogado: <span id="total-time">0s</span></h2>
+  </div>
+  <script src="js/userdb.js"></script>
+  <script>
+    function formatTime(ms) {
+      const sec = Math.floor(ms / 1000);
+      const min = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${min}m ${s}s`;
+    }
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCurrentUser();
+      const user = getCurrentUser();
+      if (user) {
+        document.getElementById('total-time').textContent = formatTime(user.totalTime || 0);
+      } else {
+        document.getElementById('total-time').textContent = 'Faça login';
+      }
+    });
+  </script>
+</body>
+</html>
