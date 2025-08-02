@@ -109,7 +109,8 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
         points += 25000;
         atualizarBarraProgresso();
-        if (selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+        const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
+        if (points >= threshold && !completedModes[selectedMode]) {
           finishMode();
         }
       } else if (listeningForCommand) {
@@ -156,9 +157,12 @@ let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
 const INITIAL_POINTS = 3500;
 const COMPLETION_THRESHOLD = 25000;
+const MODE6_THRESHOLD = 25115;
+const MODE6_MENU_THRESHOLD = 21115;
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
 let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
 let modeIntroShown = JSON.parse(localStorage.getItem('modeIntroShown') || '{}');
+let mode6MenuStar = localStorage.getItem('mode6MenuStar') === 'true';
 let points = INITIAL_POINTS;
 let premioBase = 4000;
 let premioDec = 1;
@@ -232,6 +236,15 @@ function updateModeIcons() {
       img.style.opacity = '0.3';
     }
   });
+  if (points >= MODE6_MENU_THRESHOLD || mode6MenuStar) {
+    if (!mode6MenuStar && points >= MODE6_MENU_THRESHOLD) {
+      mode6MenuStar = true;
+      localStorage.setItem('mode6MenuStar', 'true');
+    }
+    document.querySelectorAll('#menu-modes img[data-mode="6"]').forEach(img => {
+      img.src = 'selos%20modos%20de%20jogo/modostar.png';
+    });
+  }
   checkForMenuLevelUp();
 }
 
@@ -366,7 +379,8 @@ function startIntroProgress(duration) {
   const start = Date.now();
   introProgressInterval = setInterval(() => {
     const ratio = Math.min((Date.now() - start) / duration, 1);
-    const pontos = ratio * 25000;
+    const limite = selectedMode === 6 ? MODE6_THRESHOLD : 25000;
+    const pontos = ratio * limite;
     filled.style.width = (ratio * 100) + '%';
     filled.style.backgroundColor = calcularCor(pontos);
     if (ratio >= 1) clearInterval(introProgressInterval);
@@ -387,7 +401,7 @@ function startTryAgainAnimation() {
   if (!msg) return;
   if (tryAgainColorInterval) clearInterval(tryAgainColorInterval);
   const duration = 30000;
-  const maxPoints = 25000;
+  const maxPoints = selectedMode === 6 ? MODE6_THRESHOLD : 25000;
   const begin = Date.now();
   tryAgainColorInterval = setInterval(() => {
     const elapsed = (Date.now() - begin) % duration;
@@ -578,7 +592,8 @@ function beginGame() {
     const icon = document.getElementById('mode-icon');
     if (icon) {
       icon.src = modeImages[selectedMode];
-      const ratio = Math.max(0, Math.min(points, 25000)) / 25000;
+      const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
+      const ratio = Math.max(0, Math.min(points, threshold)) / threshold;
       icon.style.opacity = ratio;
       icon.style.display = 'block';
     }
@@ -817,7 +832,8 @@ function verificarResposta() {
     points += 25000;
     input.value = '';
     atualizarBarraProgresso();
-    if (selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+    const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
+    if (points >= threshold && !completedModes[selectedMode]) {
       finishMode();
     }
     return;
@@ -832,7 +848,8 @@ function verificarResposta() {
     acertosTotais++;
     resultado.textContent = '';
     points += 1000;
-    const reached = selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
+    const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
+    const reached = points >= threshold && !completedModes[selectedMode];
     flashSuccess(() => {
       if (reached) finishMode();
       else continuar();
@@ -863,7 +880,8 @@ function verificarResposta() {
     if (selectedMode === 5) {
       points += 1000;
     }
-    const reached = selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
+    const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
+    const reached = points >= threshold && !completedModes[selectedMode];
     flashSuccess(() => {
       if (reached) finishMode();
       else continuar();
@@ -900,7 +918,7 @@ function atualizarBarraProgresso() {
   const premioAtual = premioBase - (Date.now() - prizeStart) * premioDec;
   document.getElementById('score').textContent = `PREMIO (${Math.round(premioAtual)}) pontos: (${Math.round(points)})`;
   const filled = document.getElementById('barra-preenchida');
-  const limite = 25000;
+  const limite = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
   filled.style.backgroundColor = calcularCor(points);
@@ -926,6 +944,21 @@ function finishMode() {
   }
 
   updateModeIcons();
+
+  if (selectedMode === 6) {
+    const alreadyStar = mode6MenuStar;
+    mode6MenuStar = true;
+    localStorage.setItem('mode6MenuStar', 'true');
+    const selector = alreadyStar ? '#mode-buttons img[data-mode="6"]' : '#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]';
+    document.querySelectorAll(selector).forEach(img => {
+      img.style.transition = 'opacity 1000ms linear';
+      img.style.opacity = '0';
+      setTimeout(() => {
+        img.src = 'selos%20modos%20de%20jogo/modostar.png';
+        img.style.opacity = '1';
+      }, 1000);
+    });
+  }
 }
 
 function nextMode() {
