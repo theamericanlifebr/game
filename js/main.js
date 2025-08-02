@@ -106,15 +106,18 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         retryCallback = null;
         cb();
       }
-    } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
-      points += 25000;
-      if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-        const audio = document.getElementById('somNextLevel');
-        if (audio) { audio.currentTime = 0; audio.play(); }
-        nextLevelSoundPlayed = true;
-      }
-      atualizarBarraProgresso();
-    } else if (listeningForCommand) {
+      } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
+        points += 25000;
+        if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
+          const audio = document.getElementById('somNextLevel');
+          if (audio) { audio.currentTime = 0; audio.play(); }
+          nextLevelSoundPlayed = true;
+        }
+        atualizarBarraProgresso();
+        if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+          finishMode();
+        }
+      } else if (listeningForCommand) {
       if (normCmd.includes('play')) {
         listeningForCommand = false;
         startGame(getHighestUnlockedMode());
@@ -925,6 +928,26 @@ function atualizarBarraProgresso() {
   }
 }
 
+function upgradeMode6Icon(animated = false) {
+  const starSrc = 'selos%20modos%20de%20jogo/modostar.png';
+  modeImages[6] = starSrc;
+  if (modeTransitions[5]) modeTransitions[5].img = starSrc;
+  document.querySelectorAll('img[data-mode="6"]').forEach(img => {
+    if (animated && img.closest('#menu-modes')) {
+      img.style.transition = 'opacity 1000ms linear';
+      img.style.opacity = '0';
+      setTimeout(() => {
+        img.src = starSrc;
+        img.style.opacity = '1';
+      }, 1000);
+    } else {
+      img.src = starSrc;
+    }
+  });
+  const menuImg = document.querySelector('#menu-modes img[data-mode="6"]');
+  if (menuImg) menuImg.addEventListener('click', handleStarClick, { once: true });
+}
+
 function finishMode() {
   if (completedModes[selectedMode]) return;
   completedModes[selectedMode] = true;
@@ -933,18 +956,7 @@ function finishMode() {
 
   if (selectedMode === 6) {
     goHome();
-    setTimeout(() => {
-      const img = document.querySelector('#menu-modes img[data-mode="6"]');
-      if (img) {
-        img.style.transition = 'opacity 1000ms linear';
-        img.style.opacity = '0';
-        setTimeout(() => {
-          img.src = 'selos%20modos%20de%20jogo/modostar.png';
-          img.style.opacity = '1';
-          img.addEventListener('click', handleStarClick, { once: true });
-        }, 1000);
-      }
-    }, 500);
+    setTimeout(() => upgradeMode6Icon(true), 500);
     return;
   }
 
@@ -1091,6 +1103,7 @@ window.onload = async () => {
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
+  if (completedModes[6]) upgradeMode6Icon();
   if (!ilifeDone) {
     const menu = document.getElementById('menu');
     const screen = document.getElementById('ilife-screen');
