@@ -9,6 +9,10 @@ body.dark-mode {
   color: #fff;
 }
 
+body.star-mode {
+  background: linear-gradient(180deg, #000, #001533);
+}
+
 body.dark-mode #pt,
 body.dark-mode #texto-exibicao,
 body.dark-mode #resultado,
