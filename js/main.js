@@ -99,7 +99,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
           cb();
         }
       }
-    } else if (awaitingRetry && (normCmd.includes('try again') || normCmd.includes('tentar de novo'))) {
+      } else if (awaitingRetry && (normCmd.includes('try again') || normCmd.includes('tentar de novo'))) {
       awaitingRetry = false;
       if (retryCallback) {
         const cb = retryCallback;
@@ -108,13 +108,8 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
       } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
         points += 25000;
-        if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-          const audio = document.getElementById('somNextLevel');
-          if (audio) { audio.currentTime = 0; audio.play(); }
-          nextLevelSoundPlayed = true;
-        }
         atualizarBarraProgresso();
-        if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+        if (selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
           finishMode();
         }
       } else if (listeningForCommand) {
@@ -180,14 +175,6 @@ let tutorialInProgress = false;
 let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
-let nextLevelSoundPlayed = false;
-
-const somNextLevel = document.getElementById('somNextLevel');
-if (somNextLevel) {
-  somNextLevel.addEventListener('play', () => {
-    setTimeout(() => upgradeMode6Icon(true), 1);
-  });
-}
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -319,8 +306,7 @@ let transitioning = false;
 
 const levelUpTransition = {
   duration: 4000,
-  img: 'https://cdn.dribbble.com/userupload/41814123/file/original-fb8a772ba8676fd28c528fd1259cabcb.gif',
-  audio: 'somNextLevel'
+  img: 'https://cdn.dribbble.com/userupload/41814123/file/original-fb8a772ba8676fd28c528fd1259cabcb.gif'
 };
 
 const colorStops = [
@@ -598,7 +584,6 @@ function beginGame() {
     }
     const texto = document.getElementById('texto-exibicao');
     if (texto) texto.style.opacity = '1';
-    nextLevelSoundPlayed = false;
     updateLevelIcon();
     updateModeIcons();
     switch (selectedMode) {
@@ -830,14 +815,9 @@ function verificarResposta() {
   const bonusPhrase = resposta.toLowerCase().replace(/\s+/g, '');
   if (bonusPhrase === 'Justiça de Deus' || bonusPhrase === 'getpointslife') {
     points += 25000;
-    if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-      const audio = document.getElementById('somNextLevel');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-      nextLevelSoundPlayed = true;
-    }
     input.value = '';
     atualizarBarraProgresso();
-    if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
+    if (selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
       finishMode();
     }
     return;
@@ -852,7 +832,7 @@ function verificarResposta() {
     acertosTotais++;
     resultado.textContent = '';
     points += 1000;
-    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
+    const reached = selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
     flashSuccess(() => {
       if (reached) finishMode();
       else continuar();
@@ -883,12 +863,7 @@ function verificarResposta() {
     if (selectedMode === 5) {
       points += 1000;
     }
-    if (selectedMode === 6 && points >= COMPLETION_THRESHOLD && !nextLevelSoundPlayed) {
-      const audio = document.getElementById('somNextLevel');
-      if (audio) { audio.currentTime = 0; audio.play(); }
-      nextLevelSoundPlayed = true;
-    }
-    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
+    const reached = selectedMode !== 6 && points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
     flashSuccess(() => {
       if (reached) finishMode();
       else continuar();
@@ -935,59 +910,11 @@ function atualizarBarraProgresso() {
   }
 }
 
-function upgradeMode6Icon(animated = false) {
-  const starSrc = 'selos%20modos%20de%20jogo/modostar.png';
-  modeImages[6] = starSrc;
-  if (modeTransitions[5]) modeTransitions[5].img = starSrc;
-  document.querySelectorAll('img[data-mode="6"]').forEach(img => {
-    if (!img.src.includes('modo6.png')) {
-      img.src = starSrc;
-      return;
-    }
-    if (animated) {
-      const parent = img.parentNode;
-      parent.style.position = 'relative';
-      const clone = img.cloneNode();
-      clone.src = starSrc;
-      clone.style.position = 'absolute';
-      clone.style.top = img.offsetTop + 'px';
-      clone.style.left = img.offsetLeft + 'px';
-      clone.style.width = img.offsetWidth + 'px';
-      clone.style.height = img.offsetHeight + 'px';
-      clone.style.opacity = '0';
-      clone.style.transition = 'opacity 500ms linear';
-      clone.style.pointerEvents = 'none';
-      img.style.transition = 'opacity 500ms linear';
-      parent.appendChild(clone);
-      requestAnimationFrame(() => {
-        img.style.opacity = '0';
-        clone.style.opacity = '1';
-      });
-      setTimeout(() => {
-        img.src = starSrc;
-        img.style.opacity = '1';
-        clone.remove();
-      }, 500);
-    } else {
-      img.src = starSrc;
-    }
-  });
-  const menuImg = document.querySelector('#menu-modes img[data-mode="6"]');
-  if (menuImg) menuImg.addEventListener('click', handleStarClick, { once: true });
-}
-
 function finishMode() {
   if (completedModes[selectedMode]) return;
   completedModes[selectedMode] = true;
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
   const next = selectedMode + 1;
-
-  if (selectedMode === 6) {
-    goHome();
-    setTimeout(() => upgradeMode6Icon(true), 500);
-    return;
-  }
-
   if (next <= 6) {
     unlockMode(next, 500);
     const audio = document.getElementById('somModoDesbloqueado');
@@ -998,38 +925,6 @@ function finishMode() {
     }
   }
 
-  updateModeIcons();
-}
-
-function handleStarClick() {
-  const starImg = document.querySelector('#menu-modes img[data-mode="6"]');
-  const icons = document.querySelectorAll('#menu-modes img');
-  icons.forEach(img => {
-    const mode = parseInt(img.dataset.mode, 10);
-    if (mode >= 2 && mode <= 5) {
-      img.style.transition = 'opacity 1000ms linear';
-      img.style.opacity = '0.3';
-    } else if (mode === 1) {
-      img.style.opacity = '1';
-    }
-  });
-  if (starImg) {
-    starImg.style.transition = 'opacity 300ms linear';
-    starImg.style.opacity = '0';
-    setTimeout(() => {
-      starImg.src = modeImages[6];
-      starImg.style.opacity = '0';
-      starImg.style.transition = 'opacity 700ms linear';
-      starImg.style.opacity = '0.3';
-    }, 300);
-  }
-  pastaAtual++;
-  localStorage.setItem('pastaAtual', pastaAtual);
-  completedModes = {};
-  unlockedModes = { 1: true };
-  localStorage.setItem('completedModes', JSON.stringify(completedModes));
-  localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
-  updateLevelIcon();
   updateModeIcons();
 }
 
@@ -1131,7 +1026,6 @@ window.onload = async () => {
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
-  if (completedModes[6]) upgradeMode6Icon();
   if (!ilifeDone) {
     const menu = document.getElementById('menu');
     const screen = document.getElementById('ilife-screen');
