@@ -119,8 +119,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         startGame(getHighestUnlockedMode());
       }
     } else {
-      document.getElementById("pt").value = transcript;
-      verificarResposta();
+      if (normCmd.includes('reportar') || normCmd.includes('report')) {
+        reportLastError();
+      } else {
+        document.getElementById("pt").value = transcript;
+        verificarResposta();
+      }
     }
   };
 
@@ -178,6 +182,11 @@ let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
 let sessionStart = null;
+let mode1Stats = JSON.parse(localStorage.getItem('mode1Stats') || '{"totalPhrases":0,"totalTime":0,"correct":0,"wrong":0,"report":0}');
+let mode1Start = null;
+let lastWasError = false;
+let lastReward = 0;
+let lastPenalty = 0;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -203,6 +212,33 @@ const modeIntros = {
   5: { duration: 6500, img: modeImages[5], audio: 'somModo5Intro' },
   6: { duration: 6000, img: modeImages[6], audio: 'somModo6Intro' }
 };
+
+function saveMode1Stats() {
+  localStorage.setItem('mode1Stats', JSON.stringify(mode1Stats));
+}
+
+function recordMode1Time() {
+  if (mode1Start) {
+    mode1Stats.totalTime += Date.now() - mode1Start;
+    mode1Start = null;
+    saveMode1Stats();
+  }
+}
+
+function reportLastError() {
+  if (!lastWasError) return;
+  lastWasError = false;
+  acertosTotais++;
+  errosTotais = Math.max(0, errosTotais - 1);
+  points += lastReward + lastPenalty;
+  atualizarBarraProgresso();
+  if (selectedMode === 1) {
+    mode1Stats.correct++;
+    mode1Stats.wrong = Math.max(0, mode1Stats.wrong - 1);
+    mode1Stats.report++;
+    saveMode1Stats();
+  }
+}
 
 function updateLevelIcon() {
   const icon = document.getElementById('nivel-indicador');
@@ -412,6 +448,10 @@ function stopTryAgainAnimation() {
 }
 
 function startGame(modo) {
+  const prevMode = selectedMode;
+  if (prevMode === 1 && modo !== 1) {
+    recordMode1Time();
+  }
   selectedMode = modo;
   updateModeIcons();
   listeningForCommand = false;
@@ -584,6 +624,9 @@ function showLevelUp(callback) {
 
 function beginGame() {
   sessionStart = Date.now();
+  if (selectedMode === 1) {
+    mode1Start = Date.now();
+  }
   const start = () => {
     document.getElementById('visor').style.display = 'flex';
     const icon = document.getElementById('mode-icon');
@@ -839,8 +882,15 @@ function verificarResposta() {
   tentativasTotais++;
   const elapsed = Date.now() - prizeStart;
   const premioAtual = premioBase - elapsed * premioDec;
+  const penalty = elapsed * penaltyFactor;
+  lastReward = premioAtual;
+  lastPenalty = penalty;
+  lastWasError = false;
 
   if (selectedMode === 1) {
+    mode1Stats.totalPhrases++;
+    mode1Stats.correct++;
+    saveMode1Stats();
     document.getElementById("somAcerto").play();
     acertosTotais++;
     resultado.textContent = '';
@@ -886,6 +936,7 @@ function verificarResposta() {
   } else {
     document.getElementById("somErro").play();
     errosTotais++;
+    lastWasError = true;
     resultado.textContent = "";
     resultado.style.color = "red";
     input.value = '';
@@ -895,7 +946,7 @@ function verificarResposta() {
     flashError(esperado, () => {
       input.disabled = false;
       bloqueado = false;
-      points = Math.max(0, points - elapsed * penaltyFactor);
+      points = Math.max(0, points - penalty);
       continuar();
     });
   }
@@ -958,6 +1009,9 @@ function nextMode() {
   transitioning = true;
   if (selectedMode < 6) {
     const current = selectedMode;
+    if (current === 1) {
+      recordMode1Time();
+    }
     const next = current + 1;
     const info = modeTransitions[current];
     selectedMode = next;
@@ -988,6 +1042,9 @@ function goHome() {
     const total = parseInt(localStorage.getItem('totalTime') || '0', 10);
     localStorage.setItem('totalTime', total + (Date.now() - sessionStart));
     sessionStart = null;
+  }
+  if (selectedMode === 1) {
+    recordMode1Time();
   }
   document.getElementById('visor').style.display = 'none';
   document.getElementById('menu').style.display = 'flex';

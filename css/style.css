@@ -47,6 +47,18 @@ body.dark-mode #intro-overlay {
   background: #000;
 }
 
+.custom-title {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+}
+
+.custom-info {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  margin: 5px 0;
+}
+
 #visor {
   position: relative;
   display: flex;
