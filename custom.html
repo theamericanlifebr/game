@@ -17,7 +17,6 @@
   <div id="custom-content" style="text-align:center;margin-top:50px;">
     <h2>Tempo total jogado: <span id="total-time">0s</span></h2>
   </div>
-  <script src="js/userdb.js"></script>
   <script>
     function formatTime(ms) {
       const sec = Math.floor(ms / 1000);
@@ -26,12 +25,8 @@
       return `${min}m ${s}s`;
     }
     document.addEventListener('DOMContentLoaded', () => {
-      const user = getCurrentUser();
-      if (user) {
-        document.getElementById('total-time').textContent = formatTime(user.totalTime || 0);
-      } else {
-        document.getElementById('total-time').textContent = 'Faça login';
-      }
+      const ms = parseInt(localStorage.getItem('totalTime') || '0', 10);
+      document.getElementById('total-time').textContent = formatTime(ms);
     });
   </script>
 </body>
