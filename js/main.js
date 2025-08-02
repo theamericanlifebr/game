@@ -177,6 +177,7 @@ let tutorialInProgress = false;
 let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
+let sessionStart = null;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -582,6 +583,7 @@ function showLevelUp(callback) {
 }
 
 function beginGame() {
+  sessionStart = Date.now();
   const start = () => {
     document.getElementById('visor').style.display = 'flex';
     const icon = document.getElementById('mode-icon');
@@ -944,6 +946,8 @@ function finishMode() {
     document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]').forEach(img => {
       img.src = 'selos%20modos%20de%20jogo/modostar.png';
     });
+    const star = document.getElementById('somLevelStar');
+    if (star) { star.currentTime = 0; star.play(); }
     levelUpReady = true;
     goHome();
   }
@@ -980,6 +984,14 @@ function nextMode() {
 
 
 function goHome() {
+  if (sessionStart) {
+    const user = getCurrentUser();
+    if (user) {
+      user.totalTime = (user.totalTime || 0) + (Date.now() - sessionStart);
+      updateCurrentUser(user);
+    }
+    sessionStart = null;
+  }
   document.getElementById('visor').style.display = 'none';
   document.getElementById('menu').style.display = 'flex';
   const icon = document.getElementById('mode-icon');
@@ -1041,7 +1053,7 @@ function startTutorial() {
 }
 
 
-window.onload = async () => {
+async function initGame() {
   const saved = parseInt(localStorage.getItem('pastaAtual'), 10);
   if (saved) pastaAtual = saved;
   await carregarPastas();
@@ -1086,7 +1098,6 @@ window.onload = async () => {
     reconhecimento.start();
   }
 
-
   document.addEventListener('keydown', e => {
     if (ilifeActive && e.code === 'Space') {
       const lock = document.getElementById('somLock');
@@ -1115,4 +1126,15 @@ window.onload = async () => {
       beginGame();
     }
   });
+}
+
+window.onload = async () => {
+  if (!getCurrentUser()) {
+    const screen = document.getElementById('login-screen');
+    if (screen) screen.style.display = 'flex';
+    return;
+  }
+  document.getElementById('top-nav').style.display = 'flex';
+  document.getElementById('menu').style.display = 'flex';
+  await initGame();
 };
