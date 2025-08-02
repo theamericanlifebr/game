@@ -985,11 +985,8 @@ function nextMode() {
 
 function goHome() {
   if (sessionStart) {
-    const user = getCurrentUser();
-    if (user) {
-      user.totalTime = (user.totalTime || 0) + (Date.now() - sessionStart);
-      updateCurrentUser(user);
-    }
+    const total = parseInt(localStorage.getItem('totalTime') || '0', 10);
+    localStorage.setItem('totalTime', total + (Date.now() - sessionStart));
     sessionStart = null;
   }
   document.getElementById('visor').style.display = 'none';
@@ -1063,7 +1060,15 @@ async function initGame() {
     const menu = document.getElementById('menu');
     const screen = document.getElementById('ilife-screen');
     if (menu) menu.style.display = 'none';
-    if (screen) screen.style.display = 'flex';
+    if (screen) {
+      screen.style.display = 'flex';
+      const text = document.getElementById('ilife-text');
+      const lock = document.getElementById('somLock');
+      screen.addEventListener('click', () => {
+        if (lock) { lock.currentTime = 0; lock.play(); }
+        if (text) text.textContent = 'diga play para começar';
+      }, { once: true });
+    }
     ilifeActive = true;
   } else if (!tutorialDone) {
     startTutorial();
@@ -1129,11 +1134,6 @@ async function initGame() {
 }
 
 window.onload = async () => {
-  if (!getCurrentUser()) {
-    const screen = document.getElementById('login-screen');
-    if (screen) screen.style.display = 'flex';
-    return;
-  }
   document.getElementById('top-nav').style.display = 'flex';
   document.getElementById('menu').style.display = 'flex';
   await initGame();
