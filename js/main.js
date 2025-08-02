@@ -46,13 +46,14 @@ function ehQuaseCorretoPalavras(resp, esp) {
   const normWord = w => w.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
   const rWords = resp.split(/\s+/).map(normWord).filter(Boolean);
   const eWords = esp.split(/\s+/).map(normWord).filter(Boolean);
-  let dif = Math.abs(rWords.length - eWords.length);
-  const len = Math.min(rWords.length, eWords.length);
-  for (let i = 0; i < len; i++) {
-    if (rWords[i] !== eWords[i]) dif++;
-    if (dif > 1) return false;
+  if (rWords.length < eWords.length || rWords.length - eWords.length > 3) return false;
+  const rCounts = {};
+  rWords.forEach(w => { rCounts[w] = (rCounts[w] || 0) + 1; });
+  for (const w of eWords) {
+    if (!rCounts[w]) return false;
+    rCounts[w]--;
   }
-  return dif <= 1;
+  return true;
 }
 
 
@@ -76,14 +77,16 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const transcript = event.results[event.results.length - 1][0].transcript.trim();
     const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (ilifeActive) {
-      ilifeActive = false;
-      localStorage.setItem('ilifeDone', 'true');
-      const screen = document.getElementById('ilife-screen');
-      const menu = document.getElementById('menu');
-      if (screen) screen.style.display = 'none';
-      if (menu) menu.style.display = 'flex';
-      if (!tutorialDone) {
-        startTutorial();
+      if (normCmd.includes('play')) {
+        ilifeActive = false;
+        localStorage.setItem('ilifeDone', 'true');
+        const screen = document.getElementById('ilife-screen');
+        const menu = document.getElementById('menu');
+        if (screen) screen.style.display = 'none';
+        if (menu) menu.style.display = 'flex';
+        if (!tutorialDone) {
+          startTutorial();
+        }
       }
       return;
     }
@@ -112,8 +115,10 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
       atualizarBarraProgresso();
     } else if (listeningForCommand) {
-      listeningForCommand = false;
-      startGame(1);
+      if (normCmd.includes('play')) {
+        listeningForCommand = false;
+        startGame(getHighestUnlockedMode());
+      }
     } else {
       document.getElementById("pt").value = transcript;
       verificarResposta();
@@ -155,6 +160,7 @@ const INITIAL_POINTS = 3500;
 const COMPLETION_THRESHOLD = 25000;
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
 let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
+let modeIntroShown = JSON.parse(localStorage.getItem('modeIntroShown') || '{}');
 let points = INITIAL_POINTS;
 let premioBase = 4000;
 let premioDec = 1;
@@ -163,7 +169,6 @@ let prizeStart = 0;
 let prizeTimer = null;
 let awaitingNextLevel = false;
 let nextLevelCallback = null;
-let letsPlayInterval = null;
 let awaitingRetry = false;
 let retryCallback = null;
 let tryAgainColorInterval = null;
@@ -231,6 +236,11 @@ function updateModeIcons() {
     }
   });
   checkForMenuLevelUp();
+}
+
+function getHighestUnlockedMode() {
+  const modes = Object.keys(unlockedModes).filter(m => unlockedModes[m]).map(Number);
+  return modes.length ? Math.max(...modes) : 1;
 }
 
 function checkForMenuLevelUp() {
@@ -407,15 +417,28 @@ function startGame(modo) {
     reconhecimentoAtivo = false;
     reconhecimento.stop();
   }
-  if (modo === 1) {
-    beginGame();
-  } else {
-    const info = modeIntros[modo];
-    if (info) {
-      showModeIntro(info, beginGame);
+  const start = () => beginGame();
+  if (!modeIntroShown[modo]) {
+    if (modo === 1) {
+      showMode1Intro(() => {
+        modeIntroShown[1] = true;
+        localStorage.setItem('modeIntroShown', JSON.stringify(modeIntroShown));
+        start();
+      });
     } else {
-      beginGame();
+      const info = modeIntros[modo];
+      if (info) {
+        showModeIntro(info, () => {
+          modeIntroShown[modo] = true;
+          localStorage.setItem('modeIntroShown', JSON.stringify(modeIntroShown));
+          start();
+        });
+      } else {
+        start();
+      }
     }
+  } else {
+    showShortModeIntro(modo, start);
   }
 }
 
@@ -623,11 +646,7 @@ function beginGame() {
     carregarFrases();
   };
 
-  if (selectedMode === 1) {
-    showMode1Intro(start);
-  } else {
-    start();
-  }
+  start();
 }
 
 function falar(texto, lang) {
@@ -645,6 +664,31 @@ function togglePt() {
 function toggleEn() {
   voz = voz ? null : 'en';
   mostrarFrase();
+}
+
+function showShortModeIntro(modo, callback) {
+  const overlay = document.getElementById('intro-overlay');
+  const img = document.getElementById('intro-image');
+  const audio = document.getElementById('somWoosh');
+  img.src = modeImages[modo];
+  img.style.animation = 'none';
+  img.style.transition = 'none';
+  img.style.opacity = '1';
+  img.style.width = '200px';
+  img.style.height = '200px';
+  void img.offsetWidth;
+  img.style.transition = 'width 3000ms linear, height 3000ms linear';
+  overlay.style.display = 'flex';
+  if (audio) { audio.currentTime = 0; audio.play(); }
+  img.style.width = '350px';
+  img.style.height = '350px';
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    img.style.transition = 'none';
+    img.style.width = '';
+    img.style.height = '';
+    callback();
+  }, 3000);
 }
 
 function toggleDarkMode() {
@@ -783,7 +827,7 @@ function verificarResposta() {
     }
     input.value = '';
     atualizarBarraProgresso();
-    if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode] && selectedMode !== 6) {
+    if (points >= COMPLETION_THRESHOLD && !completedModes[selectedMode]) {
       finishMode();
     }
     return;
@@ -834,7 +878,7 @@ function verificarResposta() {
       if (audio) { audio.currentTime = 0; audio.play(); }
       nextLevelSoundPlayed = true;
     }
-    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode] && selectedMode !== 6;
+    const reached = points >= COMPLETION_THRESHOLD && !completedModes[selectedMode];
     flashSuccess(() => {
       if (reached) finishMode();
       else continuar();
@@ -887,20 +931,65 @@ function finishMode() {
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
   const next = selectedMode + 1;
 
+  if (selectedMode === 6) {
+    goHome();
+    setTimeout(() => {
+      const img = document.querySelector('#menu-modes img[data-mode="6"]');
+      if (img) {
+        img.style.transition = 'opacity 1000ms linear';
+        img.style.opacity = '0';
+        setTimeout(() => {
+          img.src = 'selos%20modos%20de%20jogo/modostar.png';
+          img.style.opacity = '1';
+          img.addEventListener('click', handleStarClick, { once: true });
+        }, 1000);
+      }
+    }, 500);
+    return;
+  }
+
   if (next <= 6) {
     unlockMode(next, 500);
     const audio = document.getElementById('somModoDesbloqueado');
     if (audio) { audio.currentTime = 0; audio.play(); }
 
     if (selectedMode === 5) {
-      setTimeout(() => {
-        goHome();
-      }, 500);
+      setTimeout(() => { continuar(); }, 500);
     }
-  } else {
-    menuLevelUpSequence();
   }
 
+  updateModeIcons();
+}
+
+function handleStarClick() {
+  const starImg = document.querySelector('#menu-modes img[data-mode="6"]');
+  const icons = document.querySelectorAll('#menu-modes img');
+  icons.forEach(img => {
+    const mode = parseInt(img.dataset.mode, 10);
+    if (mode >= 2 && mode <= 5) {
+      img.style.transition = 'opacity 1000ms linear';
+      img.style.opacity = '0.3';
+    } else if (mode === 1) {
+      img.style.opacity = '1';
+    }
+  });
+  if (starImg) {
+    starImg.style.transition = 'opacity 300ms linear';
+    starImg.style.opacity = '0';
+    setTimeout(() => {
+      starImg.src = modeImages[6];
+      starImg.style.opacity = '0';
+      starImg.style.transition = 'opacity 700ms linear';
+      starImg.style.opacity = '0.3';
+    }, 300);
+  }
+  pastaAtual++;
+  localStorage.setItem('pastaAtual', pastaAtual);
+  completedModes = {};
+  unlockedModes = { 1: true };
+  localStorage.setItem('completedModes', JSON.stringify(completedModes));
+  localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
+  updateLevelIcon();
   updateModeIcons();
 }
 
@@ -1037,16 +1126,6 @@ window.onload = async () => {
     reconhecimento.start();
   }
 
-  const letsPlayAudio = document.getElementById('somLetsPlay');
-  if (letsPlayAudio) {
-    letsPlayAudio.play();
-    letsPlayInterval = setInterval(() => {
-      if (document.getElementById('menu').style.display !== 'none') {
-        letsPlayAudio.currentTime = 0;
-        letsPlayAudio.play();
-      }
-    }, 20000);
-  }
 
   document.addEventListener('keydown', e => {
     if (ilifeActive && e.code === 'Space') {
