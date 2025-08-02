@@ -1,4 +1,4 @@
-Você disse:
+
 let pastas = {};
 
 function parsePastas(raw) {
@@ -1157,3 +1157,4 @@ window.onload = async () => {
     }
   });
 };
+
