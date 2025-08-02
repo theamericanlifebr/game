@@ -6,34 +6,31 @@ const pastas = {
   
   
 
-Você gosta de música#You like music
-Nós gostamos de cachorros#We like dogs
-Eles gostam de livros#They like books
-Eu como pão#I eat bread
-Você bebe água#You drink water
-Nós jogamos futebol#We play soccer
-Eles assistem TV#They watch TV
-Eu amo café#I love coffee
-Você lê um livro#You read a book
-Nós vamos para escola#We go to school
-Eles andam para casa#They walk home
-Eu tenho um celular#I have a phone
-Você tem um carro#You have a car
-Nós temos amigos#We have friends
-Eles têm uma casa#They have a house
-Eu vejo um gato#I see a cat
-Você vê um pássaro#You see a bird
-Nós precisamos de ajuda#We need help
-Eles querem comida#They want food
-Eu vejo o pássaro#I see the bird
-Você abre a porta#You open the door
-Nós fechamos a janela#We close the window
-Eles limpam o quarto#They clean the room
-Eu cozinho arroz#I cook rice
-Você lava suas mãos#You wash your hands
-Nós estudamos inglês#We study English
-Eles jogam jogos#They play games
-
+Eu sou#I am
+Você é#You are
+Ele é#He is
+Ela é#She is
+É bom#Is good
+É ruim#Is bad
+É meu#Is mine
+É seu#Is yours
+É seu cão#Is your dog
+Está frio#Is cold
+Está quente#Is hot
+Vá já#Go now
+Venha já#Come now
+Fique lá#Stay there
+Brinque bem#Play nice
+Corra já#Run now
+Toque isso#Touch this
+Veja isso#See this
+Ouça bem#Hear well
+Pare já#Stop now
+Leia já#Read now
+Fale com ele#Talk to him
+Brinque com ela#Play with her
+Fique com ele#Stay with him
+Vá com ela#Go with her
 
   
   
@@ -6451,5 +6448,6 @@ Quase nenhum deles voltou#Scarcely any of them came back
 
 
 }
+
 
 
