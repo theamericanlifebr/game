@@ -1,3 +1,4 @@
+Você disse:
 let pastas = {};
 
 function parsePastas(raw) {
@@ -12,7 +13,7 @@ async function carregarPastas() {
   const resp = await fetch('data/pastas.json');
   const text = await resp.text();
   const obj = {};
-  const regex = /(\d+):\s*`([\s\S]*?)`/g;
+  const regex = /(\d+):\s*([\s\S]*?)/g;
   let m;
   while ((m = regex.exec(text))) {
     obj[m[1]] = m[2];
@@ -210,7 +211,7 @@ function updateLevelIcon() {
     icon.style.transition = 'opacity 500ms linear';
     icon.style.opacity = '0';
     setTimeout(() => {
-      icon.src = `selos_niveis/level%20${pastaAtual}.png`;
+      icon.src = selos_niveis/level%20${pastaAtual}.png;
       icon.style.opacity = '1';
     }, 500);
   }
@@ -220,8 +221,8 @@ function updateLevelIcon() {
 function unlockMode(mode, duration = 1000) {
   unlockedModes[mode] = true;
   localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
-  document.querySelectorAll(`#menu-modes img[data-mode="${mode}"], #mode-buttons img[data-mode="${mode}"]`).forEach(img => {
-    img.style.transition = `opacity ${duration}ms linear`;
+  document.querySelectorAll(#menu-modes img[data-mode="${mode}"], #mode-buttons img[data-mode="${mode}"]).forEach(img => {
+    img.style.transition = opacity ${duration}ms linear;
     img.style.opacity = '1';
   });
 }
@@ -485,7 +486,7 @@ function showModeIntro(info, callback) {
   img.style.opacity = '1';
   img.style.transform = 'scale(0.8)';
   void img.offsetWidth;
-  img.style.transition = `transform ${info.duration}ms linear`;
+  img.style.transition = transform ${info.duration}ms linear;
   overlay.style.display = 'flex';
   startIntroProgress(info.duration);
   if (audio) {
@@ -523,7 +524,7 @@ function showModeTransition(info, callback) {
   img.style.opacity = '1';
   img.style.transform = 'scale(0.8)';
   void img.offsetWidth;
-  img.style.transition = `transform ${info.duration}ms linear`;
+  img.style.transition = transform ${info.duration}ms linear;
   overlay.style.display = 'flex';
   startIntroProgress(info.duration);
   if (audio) {
@@ -761,7 +762,7 @@ function mostrarFrase() {
   timerEl.textContent = 'Tempo: 0s';
   timerInterval = setInterval(() => {
     const secs = Math.floor((Date.now() - start) / 1000);
-    timerEl.textContent = `Tempo: ${secs}s`;
+    timerEl.textContent = Tempo: ${secs}s;
   }, 1000);
   if (prizeTimer) clearInterval(prizeTimer);
   prizeStart = Date.now();
@@ -913,7 +914,7 @@ function continuar() {
 
 function atualizarBarraProgresso() {
   const premioAtual = premioBase - (Date.now() - prizeStart) * premioDec;
-  document.getElementById('score').textContent = `PREMIO (${Math.round(premioAtual)}) pontos: (${Math.round(points)})`;
+  document.getElementById('score').textContent = PREMIO (${Math.round(premioAtual)}) pontos: (${Math.round(points)});
   const filled = document.getElementById('barra-preenchida');
   const limite = 25000;
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
@@ -927,65 +928,62 @@ function atualizarBarraProgresso() {
 
 function finishMode() {
   if (completedModes[selectedMode]) return;
-
   completedModes[selectedMode] = true;
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
+  const next = selectedMode + 1;
 
   if (selectedMode === 6) {
     goHome();
-    const img = document.querySelector('#menu-modes img[data-mode="6"]');
-    if (img) {
-      img.style.transition = 'opacity 500ms linear';
-      img.style.opacity = '0';
-      setTimeout(() => {
-        img.src = 'selos%20modos%20de%20jogo/modostar.png';
+    setTimeout(() => {
+      const img = document.querySelector('#menu-modes img[data-mode="6"]');
+      if (img) {
+        img.style.transition = 'opacity 1000ms linear';
         img.style.opacity = '0';
-        img.style.transition = 'opacity 500ms linear';
-        setTimeout(() => { img.style.opacity = '1'; }, 50);
-        img.addEventListener('click', handleStarClick, { once: true });
-      }, 500);
-    }
+        setTimeout(() => {
+          img.src = 'selos%20modos%20de%20jogo/modostar.png';
+          img.style.opacity = '1';
+          img.addEventListener('click', handleStarClick, { once: true });
+        }, 1000);
+      }
+    }, 500);
     return;
   }
 
-  const next = selectedMode + 1;
   if (next <= 6) {
     unlockMode(next, 500);
     const audio = document.getElementById('somModoDesbloqueado');
     if (audio) { audio.currentTime = 0; audio.play(); }
-    if (selectedMode === 5) setTimeout(() => continuar(), 500);
+
+    if (selectedMode === 5) {
+      setTimeout(() => { continuar(); }, 500);
+    }
   }
+
   updateModeIcons();
 }
 
-// Modifica APENAS a função handleStarClick()
 function handleStarClick() {
   const starImg = document.querySelector('#menu-modes img[data-mode="6"]');
   const icons = document.querySelectorAll('#menu-modes img');
-
-  // Dissolve ícones modos 2 a 6 para 30%
   icons.forEach(img => {
     const mode = parseInt(img.dataset.mode, 10);
-    if (mode >= 2 && mode <= 6) {
+    if (mode >= 2 && mode <= 5) {
       img.style.transition = 'opacity 1000ms linear';
       img.style.opacity = '0.3';
     } else if (mode === 1) {
-      img.style.opacity = '1'; // verde permanece desbloqueado
+      img.style.opacity = '1';
     }
   });
-
-  // Transição do modo estrela para modo 6 padrão, dissolvendo
   if (starImg) {
     starImg.style.transition = 'opacity 300ms linear';
     starImg.style.opacity = '0';
     setTimeout(() => {
-      string's = modeImages[6];
+      starImg.src = modeImages[6];
+      starImg.style.opacity = '0';
       starImg.style.transition = 'opacity 700ms linear';
       starImg.style.opacity = '0.3';
     }, 300);
   }
-
-  // Avança nível automaticamente (mesmo que tecla 'L')
   pastaAtual++;
   localStorage.setItem('pastaAtual', pastaAtual);
   completedModes = {};
@@ -994,9 +992,35 @@ function handleStarClick() {
   localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
   updateLevelIcon();
   updateModeIcons();
+}
 
-  points = INITIAL_POINTS;
-  beginGame();
+function nextMode() {
+  if (transitioning) return;
+  transitioning = true;
+  if (selectedMode < 6) {
+    const current = selectedMode;
+    const next = current + 1;
+    const info = modeTransitions[current];
+    selectedMode = next;
+    const done = () => {
+      startGame(next);
+      transitioning = false;
+    };
+    if (info) {
+      showModeTransition(info, done);
+    } else {
+      done();
+    }
+  } else {
+    pastaAtual++;
+    selectedMode = 1;
+    const done = () => {
+      updateLevelIcon();
+      startGame(1);
+      transitioning = false;
+    };
+    showModeTransition(levelUpTransition, done);
+  }
 }
 
 
@@ -1102,7 +1126,6 @@ window.onload = async () => {
     reconhecimentoAtivo = true;
     reconhecimento.start();
   }
-
 
 
   document.addEventListener('keydown', e => {
