@@ -932,19 +932,7 @@ function finishMode() {
   const next = selectedMode + 1;
 
   if (selectedMode === 6) {
-    goHome();
-    setTimeout(() => {
-      const img = document.querySelector('#menu-modes img[data-mode="6"]');
-      if (img) {
-        img.style.transition = 'opacity 1000ms linear';
-        img.style.opacity = '0';
-        setTimeout(() => {
-          img.src = 'selos%20modos%20de%20jogo/modostar.png';
-          img.style.opacity = '1';
-          img.addEventListener('click', handleStarClick, { once: true });
-        }, 1000);
-      }
-    }, 500);
+    modoEstrela();
     return;
   }
 
@@ -961,7 +949,25 @@ function finishMode() {
   updateModeIcons();
 }
 
+function modoEstrela() {
+  goHome();
+  document.body.classList.add('star-mode');
+  setTimeout(() => {
+    const img = document.querySelector('#menu-modes img[data-mode="6"]');
+    if (img) {
+      img.style.transition = 'opacity 1000ms linear';
+      img.style.opacity = '0';
+      setTimeout(() => {
+        img.src = 'selos%20modos%20de%20jogo/modostar.png';
+        img.style.opacity = '1';
+        img.addEventListener('click', handleStarClick, { once: true });
+      }, 1000);
+    }
+  }, 500);
+}
+
 function handleStarClick() {
+  document.body.classList.remove('star-mode');
   const starImg = document.querySelector('#menu-modes img[data-mode="6"]');
   const icons = document.querySelectorAll('#menu-modes img');
   icons.forEach(img => {
