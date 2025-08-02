@@ -182,6 +182,13 @@ let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
 let ilifeActive = false;
 let nextLevelSoundPlayed = false;
 
+const somNextLevel = document.getElementById('somNextLevel');
+if (somNextLevel) {
+  somNextLevel.addEventListener('play', () => {
+    setTimeout(() => upgradeMode6Icon(true), 1);
+  });
+}
+
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
   2: 'selos%20modos%20de%20jogo/modo2.png',
@@ -933,13 +940,34 @@ function upgradeMode6Icon(animated = false) {
   modeImages[6] = starSrc;
   if (modeTransitions[5]) modeTransitions[5].img = starSrc;
   document.querySelectorAll('img[data-mode="6"]').forEach(img => {
-    if (animated && img.closest('#menu-modes')) {
-      img.style.transition = 'opacity 1000ms linear';
-      img.style.opacity = '0';
+    if (!img.src.includes('modo6.png')) {
+      img.src = starSrc;
+      return;
+    }
+    if (animated) {
+      const parent = img.parentNode;
+      parent.style.position = 'relative';
+      const clone = img.cloneNode();
+      clone.src = starSrc;
+      clone.style.position = 'absolute';
+      clone.style.top = img.offsetTop + 'px';
+      clone.style.left = img.offsetLeft + 'px';
+      clone.style.width = img.offsetWidth + 'px';
+      clone.style.height = img.offsetHeight + 'px';
+      clone.style.opacity = '0';
+      clone.style.transition = 'opacity 500ms linear';
+      clone.style.pointerEvents = 'none';
+      img.style.transition = 'opacity 500ms linear';
+      parent.appendChild(clone);
+      requestAnimationFrame(() => {
+        img.style.opacity = '0';
+        clone.style.opacity = '1';
+      });
       setTimeout(() => {
         img.src = starSrc;
         img.style.opacity = '1';
-      }, 1000);
+        clone.remove();
+      }, 500);
     } else {
       img.src = starSrc;
     }
