@@ -209,6 +209,16 @@ let lastPenalty = 0;
 let paused = false;
 let consecutiveErrors = 0;
 let pauseInterval = null;
+let downPlaying = false;
+let downTimeout = null;
+
+const reportClickHandler = () => {
+  if (downPlaying) handleReportClick();
+};
+const levelStar = document.getElementById('nivel-indicador');
+if (levelStar) levelStar.addEventListener('click', reportClickHandler);
+const modeLogo = document.getElementById('mode-icon');
+if (modeLogo) modeLogo.addEventListener('click', reportClickHandler);
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -355,9 +365,44 @@ function resumeGame() {
   continuar();
 }
 
+function triggerDownPlay() {
+  if (downPlaying) return;
+  downPlaying = true;
+  if (pauseInterval) {
+    clearInterval(pauseInterval);
+    pauseInterval = null;
+  }
+  stopCurrentGame();
+  paused = true;
+  bloqueado = true;
+  const input = document.getElementById('pt');
+  if (input) input.disabled = true;
+  const texto = document.getElementById('texto-exibicao');
+  if (texto) {
+    texto.style.transition = 'opacity 2000ms linear';
+    texto.style.opacity = '0';
+  }
+  const audio = new Audio('gamesounds/down.wav');
+  audio.play();
+  downTimeout = setTimeout(() => {
+    document.getElementById('menu').style.display = 'flex';
+    const visor = document.getElementById('visor');
+    if (visor) visor.style.display = 'none';
+    downPlaying = false;
+  }, 4000);
+}
+
+function handleReportClick() {
+  if (!downPlaying) return;
+  reportLastError();
+}
+
 function reportLastError() {
   if (!lastWasError) return;
   lastWasError = false;
+  consecutiveErrors = 0;
+  const audio = new Audio('gamesounds/report.wav');
+  audio.play();
   acertosTotais++;
   errosTotais = Math.max(0, errosTotais - 1);
   points += lastReward + lastPenalty;
@@ -375,6 +420,14 @@ function reportLastError() {
   const level = totals.total ? ((totals.report / totals.total) * 100).toFixed(2) : '0';
   stats.reportRanking.push({ expected: lastExpected, input: lastInput, folder: lastFolder, level });
   saveModeStats();
+  if (downPlaying) {
+    downPlaying = false;
+    if (downTimeout) {
+      clearTimeout(downTimeout);
+      downTimeout = null;
+    }
+    resumeGame();
+  }
 }
 
 function updateLevelIcon() {
@@ -1141,7 +1194,7 @@ function verificarResposta() {
         points = Math.max(0, points - penalty);
         saveTotals();
         if (consecutiveErrors >= 3) {
-          pauseGame();
+          triggerDownPlay();
         } else {
           continuar();
         }
