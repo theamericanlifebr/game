@@ -53,7 +53,7 @@ function createStatCircle(perc, label, valueText, extraText) {
   wrapper.className = 'stat-circle';
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 120 120');
-  const radius = 45;
+  const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   bg.setAttribute('class', 'circle-bg');
@@ -118,19 +118,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function calcGeneralStats() {
     const modes = [2, 3, 4, 5, 6];
-    let totalPhrases = 0, totalCorrect = 0, totalTime = 0;
+    let totalPhrases = 0, totalCorrect = 0, totalTime = 0, totalReport = 0;
     modes.forEach(m => {
       const s = statsData[m] || {};
       totalPhrases += s.totalPhrases || 0;
       totalCorrect += s.correct || 0;
       totalTime += s.totalTime || 0;
+      totalReport += s.report || 0;
     });
     const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
     const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
     const goalAvg = modes.reduce((sum, m) => sum + (timeGoals[m] || MAX_TIME), 0) / modes.length;
     let timePerc = totalPhrases ? ((MAX_TIME - avg) / (MAX_TIME - goalAvg) * 100) : 0;
     if (avg >= MAX_TIME) timePerc = 0;
-    return { accPerc, timePerc, avg };
+    const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
+    return { accPerc, timePerc, avg, notReportPerc };
   }
 
   function render(mode) {
@@ -138,9 +140,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       container.innerHTML = '';
       if (mode === 1) {
-        const { accPerc, timePerc, avg } = calcGeneralStats();
+        const { accPerc, timePerc, avg, notReportPerc } = calcGeneralStats();
         container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
         container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`, `(${avg.toFixed(2)})s`));
+        container.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
       } else {
         const { accPerc, timePerc, avg, notReportPerc } = calcModeStats(mode);
         container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));

@@ -445,9 +445,10 @@ body.dark-mode #clock {
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Open Sans', sans-serif;
-  font-size: 35px;
+  font-size: 26px;
   font-weight: 700;
   color: #fff;
+  text-align: center;
 }
 
 .circle-label {
