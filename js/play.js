@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const goal = timeGoals[mode] || MAX_TIME;
     let timePerc = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
     if (avg >= MAX_TIME) timePerc = 0;
+    if ([2, 3, 6].includes(mode) && total) timePerc += 20;
     const notReportPerc = total ? (100 - (report / total * 100)) : 100;
     return { accPerc, timePerc, avg, notReportPerc };
   }
@@ -124,18 +125,18 @@ document.addEventListener('DOMContentLoaded', () => {
   function calcGeneralStats() {
     const modes = [2, 3, 4, 5, 6];
     let totalPhrases = 0, totalCorrect = 0, totalTime = 0, totalReport = 0;
+    let timePercSum = 0;
     modes.forEach(m => {
       const s = statsData[m] || {};
       totalPhrases += s.totalPhrases || 0;
       totalCorrect += s.correct || 0;
       totalTime += s.totalTime || 0;
       totalReport += s.report || 0;
+      timePercSum += calcModeStats(m).timePerc;
     });
     const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
     const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
-    const goalAvg = modes.reduce((sum, m) => sum + (timeGoals[m] || MAX_TIME), 0) / modes.length;
-    let timePerc = totalPhrases ? ((MAX_TIME - avg) / (MAX_TIME - goalAvg) * 100) : 0;
-    if (avg >= MAX_TIME) timePerc = 0;
+    const timePerc = modes.length ? (timePercSum / modes.length) : 0;
     const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
     return { accPerc, timePerc, avg, notReportPerc };
   }
