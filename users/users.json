@@ -1,9 +1,9 @@
 {
   "users": [
-    {
-      "username": "italk",
-      "password": "100%justiça",
-      "stats": {}
-    }
+    { "username": "usuario1", "password": "senha01" },
+    { "username": "usuario2", "password": "senha02" },
+    { "username": "usuario3", "password": "senha03" },
+    { "username": "usuario4", "password": "senha04" },
+    { "username": "usuario5", "password": "senha05" }
   ]
 }
