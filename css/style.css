@@ -428,22 +428,29 @@ body.dark-mode #clock {
 .circle-bg {
   fill: none;
   stroke: #444;
-  stroke-width: 15;
+  stroke-width: 9.75;
   opacity: 0.3;
 }
 
 .circle-progress {
   fill: none;
-  stroke-width: 15;
-  stroke-linecap: round;
+  stroke-width: 9.75;
+  stroke-linecap: butt;
   transition: stroke-dashoffset 1s;
 }
 
-.circle-value {
+.circle-icon {
   position: absolute;
-  top: calc(50% - 12px);
+  top: calc(50% - 20px);
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+}
+
+.circle-value {
+  margin-top: 12px;
   font-family: 'Open Sans', sans-serif;
   font-size: 20px;
   font-weight: 700;
@@ -452,7 +459,7 @@ body.dark-mode #clock {
 }
 
 .circle-label {
-  margin-top: 18px;
+  margin-top: 8px;
   font-size: 18px;
   font-family: 'Open Sans', sans-serif;
   text-align: center;

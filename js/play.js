@@ -48,7 +48,7 @@ function colorFromPercent(perc) {
   return calcularCor((perc / 100) * max);
 }
 
-function createStatCircle(perc, label, valueText, extraText) {
+function createStatCircle(perc, label, iconSrc, extraText) {
   const wrapper = document.createElement('div');
   wrapper.className = 'stat-circle';
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -72,12 +72,17 @@ function createStatCircle(perc, label, valueText, extraText) {
   prog.style.stroke = colorFromPercent(perc);
   svg.appendChild(prog);
   wrapper.appendChild(svg);
+  const icon = document.createElement('img');
+  icon.className = 'circle-icon';
+  icon.src = iconSrc;
+  icon.alt = label;
+  wrapper.appendChild(icon);
   setTimeout(() => {
     prog.setAttribute('stroke-dashoffset', circumference * (1 - clamped / 100));
   }, 50);
   const value = document.createElement('div');
   value.className = 'circle-value';
-  value.textContent = valueText;
+  value.textContent = `${Math.round(perc)}%`;
   wrapper.appendChild(value);
   const labelEl = document.createElement('div');
   labelEl.className = 'circle-label';
@@ -141,14 +146,14 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = '';
       if (mode === 1) {
         const { accPerc, timePerc, notReportPerc } = calcGeneralStats();
-        container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`));
-        container.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
+        container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
+        container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
+        container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
       } else {
         const { accPerc, timePerc, notReportPerc } = calcModeStats(mode);
-        container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`));
-        container.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
+        container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
+        container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
+        container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
       }
       container.style.opacity = 1;
     }, 150);
