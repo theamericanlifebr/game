@@ -108,6 +108,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       }
       } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
         points += 25000;
+        saveTotals();
         atualizarBarraProgresso();
         const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
         if (points >= threshold && !completedModes[selectedMode]) {
@@ -149,7 +150,9 @@ setInterval(() => {
 }, 4000);
 
 let frasesArr = [], fraseIndex = 0;
-let acertosTotais = 0, errosTotais = 0, tentativasTotais = 0;
+let acertosTotais = parseInt(localStorage.getItem('acertosTotais') || '0', 10);
+let errosTotais = parseInt(localStorage.getItem('errosTotais') || '0', 10);
+let tentativasTotais = parseInt(localStorage.getItem('tentativasTotais') || '0', 10);
 let pastaAtual = 1;
 let bloqueado = false;
 let mostrarTexto = 'pt';
@@ -166,7 +169,7 @@ const MODE6_THRESHOLD = 25115;
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
 let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
 let modeIntroShown = JSON.parse(localStorage.getItem('modeIntroShown') || '{}');
-let points = INITIAL_POINTS;
+let points = parseInt(localStorage.getItem('points') || INITIAL_POINTS, 10);
 let premioBase = 4000;
 let premioDec = 1;
 let penaltyFactor = 0.5;
@@ -237,6 +240,15 @@ function saveModeStats() {
   }
 }
 
+function saveTotals() {
+  localStorage.setItem('acertosTotais', acertosTotais);
+  localStorage.setItem('errosTotais', errosTotais);
+  localStorage.setItem('tentativasTotais', tentativasTotais);
+  localStorage.setItem('points', points);
+}
+
+saveTotals();
+
 function recordModeTime(mode) {
   if (modeStartTimes[mode]) {
     const stats = ensureModeStats(mode);
@@ -252,6 +264,7 @@ function reportLastError() {
   acertosTotais++;
   errosTotais = Math.max(0, errosTotais - 1);
   points += lastReward + lastPenalty;
+  saveTotals();
   atualizarBarraProgresso();
   const stats = ensureModeStats(selectedMode);
   stats.correct++;
@@ -319,7 +332,6 @@ function performMenuLevelUp() {
     document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]').forEach(img => {
       img.src = modeImages[6];
     });
-    points = INITIAL_POINTS;
     updateLevelIcon();
     updateModeIcons();
     atualizarBarraProgresso();
@@ -512,7 +524,6 @@ function showMode1Intro(callback) {
   const overlay = document.getElementById('intro-overlay');
   const audio = document.getElementById('somModo1Intro');
   const img = document.getElementById('intro-image');
-  points = 0;
   atualizarBarraProgresso();
   img.style.animation = 'none';
   img.style.transition = 'none';
@@ -543,7 +554,6 @@ function showModeIntro(info, callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(info.audio);
-  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   img.src = info.img;
   img.style.animation = 'none';
@@ -577,7 +587,6 @@ function showModeTransition(info, callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(info.audio);
-  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   if (reconhecimento) {
     reconhecimentoAtivo = false;
@@ -615,7 +624,6 @@ function showLevelUp(callback) {
   const overlay = document.getElementById('intro-overlay');
   const img = document.getElementById('intro-image');
   const audio = document.getElementById(levelUpTransition.audio);
-  points = INITIAL_POINTS;
   atualizarBarraProgresso();
   img.src = levelUpTransition.img;
   img.style.animation = 'none';
@@ -701,12 +709,10 @@ function beginGame() {
       reconhecimento.start();
     }
     if (selectedMode === 1) {
-      points = 0;
       premioBase = 1000;
       premioDec = 0;
       penaltyFactor = 0;
     } else {
-      points = INITIAL_POINTS;
       premioBase = 4000;
       premioDec = 1;
       penaltyFactor = 0.5;
@@ -804,9 +810,6 @@ function carregarFrases() {
   );
   frasesArr = embaralhar(frasesArr);
   fraseIndex = 0;
-  acertosTotais = 0;
-  errosTotais = 0;
-  tentativasTotais = 0;
   setTimeout(() => mostrarFrase(), 300);
   atualizarBarraProgresso();
 }
@@ -900,6 +903,7 @@ function verificarResposta() {
   const bonusPhrase = resposta.toLowerCase().replace(/\s+/g, '');
   if (bonusPhrase === 'Justiça de Deus' || bonusPhrase === 'getpointslife') {
     points += 25000;
+    saveTotals();
     input.value = '';
     atualizarBarraProgresso();
     const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
@@ -910,6 +914,7 @@ function verificarResposta() {
   }
   const resultado = document.getElementById("resultado");
   tentativasTotais++;
+  saveTotals();
   const elapsed = Date.now() - prizeStart;
   const premioAtual = premioBase - elapsed * premioDec;
   const penalty = elapsed * penaltyFactor;
@@ -925,8 +930,9 @@ function verificarResposta() {
     saveModeStats();
     document.getElementById("somAcerto").play();
     acertosTotais++;
-    resultado.textContent = '';
     points += 1000;
+    saveTotals();
+    resultado.textContent = '';
     const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
     const reached = points >= threshold && !completedModes[selectedMode];
     flashSuccess(() => {
@@ -959,11 +965,12 @@ function verificarResposta() {
       saveModeStats();
       document.getElementById("somAcerto").play();
       acertosTotais++;
-      resultado.textContent = '';
       points += premioAtual;
       if (selectedMode === 5) {
         points += 1000;
       }
+      saveTotals();
+      resultado.textContent = '';
       const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
       const reached = points >= threshold && !completedModes[selectedMode];
       flashSuccess(() => {
@@ -977,6 +984,7 @@ function verificarResposta() {
       saveModeStats();
       document.getElementById("somErro").play();
       errosTotais++;
+      saveTotals();
       lastWasError = true;
       resultado.textContent = "";
       resultado.style.color = "red";
@@ -988,6 +996,7 @@ function verificarResposta() {
         input.disabled = false;
         bloqueado = false;
         points = Math.max(0, points - penalty);
+        saveTotals();
         continuar();
       });
     }
@@ -1236,7 +1245,6 @@ async function initGame() {
       clearInterval(timerInterval);
       clearInterval(prizeTimer);
       pastaAtual++;
-      points = selectedMode === 1 ? 0 : INITIAL_POINTS;
       updateLevelIcon();
       beginGame();
     }

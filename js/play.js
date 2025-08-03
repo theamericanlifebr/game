@@ -140,14 +140,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       container.innerHTML = '';
       if (mode === 1) {
-        const { accPerc, timePerc, avg, notReportPerc } = calcGeneralStats();
+        const { accPerc, timePerc, notReportPerc } = calcGeneralStats();
         container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`, `(${avg.toFixed(2)})s`));
+        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`));
         container.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
       } else {
-        const { accPerc, timePerc, avg, notReportPerc } = calcModeStats(mode);
+        const { accPerc, timePerc, notReportPerc } = calcModeStats(mode);
         container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`, `(${avg.toFixed(2)})s`));
+        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`));
         container.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
       }
       container.style.opacity = 1;

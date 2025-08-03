@@ -445,7 +445,7 @@ body.dark-mode #clock {
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Open Sans', sans-serif;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   text-align: center;
@@ -453,14 +453,16 @@ body.dark-mode #clock {
 
 .circle-label {
   margin-top: 18px;
-  font-size: 24px;
+  font-size: 18px;
   font-family: 'Open Sans', sans-serif;
+  text-align: center;
 }
 
 .circle-extra {
-  font-size: 21px;
+  font-size: 16px;
   font-family: 'Open Sans', sans-serif;
   margin-top: 7px;
+  text-align: center;
 }
 .ranking-title-blue {
   color: blue;
