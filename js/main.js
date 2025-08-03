@@ -937,12 +937,13 @@ function verificarResposta() {
     return;
   }
 
-  const [pt, en] = frasesArr[fraseIndex];
+    const [pt, en] = frasesArr[fraseIndex];
 
-  const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
-  const esperado = esperadoLang === 'pt' ? pt : en;
-  let normalizadoResp = norm(resposta);
-  const normalizadoEsp = norm(esperado);
+    const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+    const esperado = esperadoLang === 'pt' ? pt : en;
+    const expectedPhrase = esperado;
+    let normalizadoResp = norm(resposta);
+    const normalizadoEsp = norm(esperado);
   if (normalizadoResp === 'justicanaterra') {
     normalizadoResp = normalizadoEsp;
   }
@@ -951,50 +952,48 @@ function verificarResposta() {
     ehQuaseCorreto(normalizadoResp, normalizadoEsp) ||
     ehQuaseCorretoPalavras(resposta, esperado);
 
-  if (correto) {
-    stats.totalPhrases++;
-    stats.correct++;
-    saveModeStats();
-    document.getElementById("somAcerto").play();
-    acertosTotais++;
-    resultado.textContent = '';
-    points += premioAtual;
-    if (selectedMode === 5) {
-      points += 1000;
+    if (correto) {
+      stats.totalPhrases++;
+      stats.correct++;
+      stats.correctRanking[expectedPhrase] = (stats.correctRanking[expectedPhrase] || 0) + 1;
+      saveModeStats();
+      document.getElementById("somAcerto").play();
+      acertosTotais++;
+      resultado.textContent = '';
+      points += premioAtual;
+      if (selectedMode === 5) {
+        points += 1000;
+      }
+      const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
+      const reached = points >= threshold && !completedModes[selectedMode];
+      flashSuccess(() => {
+        if (reached) finishMode();
+        else continuar();
+      });
+    } else {
+      stats.totalPhrases++;
+      stats.wrong++;
+      stats.wrongRanking[expectedPhrase] = (stats.wrongRanking[expectedPhrase] || 0) + 1;
+      saveModeStats();
+      document.getElementById("somErro").play();
+      errosTotais++;
+      lastWasError = true;
+      resultado.textContent = "";
+      resultado.style.color = "red";
+      input.value = '';
+      input.disabled = true;
+      bloqueado = true;
+      falar(esperado, esperadoLang);
+      flashError(esperado, () => {
+        input.disabled = false;
+        bloqueado = false;
+        points = Math.max(0, points - penalty);
+        continuar();
+      });
     }
-    const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
-    const reached = points >= threshold && !completedModes[selectedMode];
-    flashSuccess(() => {
-      if (reached) finishMode();
-      else continuar();
-    });
-  } else {
-    stats.totalPhrases++;
-    stats.wrong++;
-    const expectedPhrase = esperado;
-    const userPhrase = resposta || '[no input]';
-    stats.correctRanking[expectedPhrase] = (stats.correctRanking[expectedPhrase] || 0) + 1;
-    stats.wrongRanking[userPhrase] = (stats.wrongRanking[userPhrase] || 0) + 1;
-    saveModeStats();
-    document.getElementById("somErro").play();
-    errosTotais++;
-    lastWasError = true;
-    resultado.textContent = "";
-    resultado.style.color = "red";
-    input.value = '';
-    input.disabled = true;
-    bloqueado = true;
-    falar(esperado, esperadoLang);
-    flashError(esperado, () => {
-      input.disabled = false;
-      bloqueado = false;
-      points = Math.max(0, points - penalty);
-      continuar();
-    });
+    atualizarBarraProgresso();
+    // Pontuação de acertos ocultada
   }
-  atualizarBarraProgresso();
-  // Pontuação de acertos ocultada
-}
 
 function continuar() {
   if (transitioning) {
