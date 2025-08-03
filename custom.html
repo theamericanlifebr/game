@@ -22,6 +22,24 @@
       const s = sec % 60;
       return `${min}m ${s}s`;
     }
+    function createRankingTable(data, color) {
+      const table = document.createElement('table');
+      table.className = `ranking-table ${color}`;
+      const header = document.createElement('tr');
+      header.innerHTML = '<th>sentença</th><th>pontos</th>';
+      table.appendChild(header);
+      Object.entries(data).sort((a,b) => b[1]-a[1]).forEach(([phrase,count]) => {
+        const row = document.createElement('tr');
+        const td1 = document.createElement('td');
+        td1.textContent = phrase;
+        const td2 = document.createElement('td');
+        td2.textContent = count;
+        row.appendChild(td1);
+        row.appendChild(td2);
+        table.appendChild(row);
+      });
+      return table;
+    }
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('custom-content');
       const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
@@ -46,6 +64,22 @@
           <div class="custom-info">Média de tempo por frase: ${avg}</div>
           <div class="custom-info">Uso de reportar: ${reportPerc}%</div>
         `;
+        const blue = stats.correctRanking || {};
+        const red = stats.wrongRanking || {};
+        if (Object.keys(blue).length) {
+          const title = document.createElement('h2');
+          title.textContent = 'Ranking azul';
+          title.className = 'ranking-title-blue';
+          section.appendChild(title);
+          section.appendChild(createRankingTable(blue, 'blue'));
+        }
+        if (Object.keys(red).length) {
+          const title = document.createElement('h2');
+          title.textContent = 'Ranking vermelho';
+          title.className = 'ranking-title-red';
+          section.appendChild(title);
+          section.appendChild(createRankingTable(red, 'red'));
+        }
         container.appendChild(section);
       }
     });

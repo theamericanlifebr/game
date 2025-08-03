@@ -453,3 +453,25 @@ body.dark-mode #clock {
   font-family: 'Open Sans', sans-serif;
   margin-top: 4px;
 }
+.ranking-title-blue {
+  color: blue;
+}
+.ranking-title-red {
+  color: red;
+}
+.ranking-table {
+  margin: 10px auto;
+  border-collapse: collapse;
+}
+.ranking-table th, .ranking-table td {
+  border: 1px solid #ccc;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: 'Open Sans', sans-serif;
+}
+.ranking-table.blue {
+  color: blue;
+}
+.ranking-table.red {
+  color: red;
+}
