@@ -6,6 +6,11 @@
   <title>American Life</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    if (localStorage.getItem('ilifeDone') === 'true') {
+      document.write('<style>#ilife-screen{display:none;}#menu{display:flex;}</style>');
+    }
+  </script>
 </head>
   <body>
     <nav id="top-nav">
