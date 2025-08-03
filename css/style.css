@@ -263,14 +263,8 @@ body.dark-mode #clock {
   gap: 40px;
 }
 
-#mode-stats .stat-circle {
+#mode-stats .stat-text {
   width: 180px;
-  height: 230px;
-}
-
-#mode-stats .stat-circle svg {
-  width: 180px;
-  height: 180px;
 }
 
 #mode-icon {
@@ -491,6 +485,18 @@ body.dark-mode .circle-value {
   font-family: 'Open Sans', sans-serif;
   margin-top: 7px;
   text-align: center;
+}
+.stat-text {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 18px;
+  text-align: center;
+  margin: 10px 0;
+}
+.stat-label {
+  font-weight: 600;
+}
+.stat-value {
+  font-weight: 700;
 }
 .ranking-title-blue {
   color: blue;
