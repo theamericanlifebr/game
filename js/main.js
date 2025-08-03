@@ -232,6 +232,9 @@ function ensureModeStats(mode) {
 
 function saveModeStats() {
   localStorage.setItem('modeStats', JSON.stringify(modeStats));
+  if (typeof saveUserPerformance === 'function') {
+    saveUserPerformance(modeStats);
+  }
 }
 
 function recordModeTime(mode) {
@@ -1242,8 +1245,6 @@ async function initGame() {
 }
 
 window.onload = async () => {
-  document.getElementById('top-nav').style.display = 'flex';
-  document.getElementById('menu').style.display = 'flex';
   const homeLink = document.getElementById('home-link');
   if (homeLink) {
     homeLink.addEventListener('click', (e) => {
@@ -1251,5 +1252,5 @@ window.onload = async () => {
       goHome();
     });
   }
-  await initGame();
+  await initAuth();
 };
