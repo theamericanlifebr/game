@@ -175,6 +175,8 @@ let selectedMode = 1;
 const INITIAL_POINTS = 3500;
 const COMPLETION_THRESHOLD = 25000;
 const MODE6_THRESHOLD = 25115;
+const timeGoals = {1:1.8, 2:2.2, 3:2.2, 4:3.0, 5:3.5, 6:2.0};
+const MAX_TIME = 6.0;
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
 let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
 let modeIntroShown = JSON.parse(localStorage.getItem('modeIntroShown') || '{}');
@@ -272,6 +274,7 @@ function saveModeStats() {
   if (typeof saveUserPerformance === 'function') {
     saveUserPerformance(modeStats);
   }
+  updateGeneralCircles();
 }
 
 function saveTotals() {
@@ -614,6 +617,117 @@ function calcularCor(pontos) {
   return colorStops[colorStops.length - 1][1];
 }
 
+function colorFromPercent(perc) {
+  const max = colorStops[colorStops.length - 1][0];
+  return calcularCor((perc / 100) * max);
+}
+
+function createStatCircle(perc, label, iconSrc, extraText) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'stat-circle';
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 120 120');
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('class', 'circle-bg');
+  bg.setAttribute('cx', '60');
+  bg.setAttribute('cy', '60');
+  bg.setAttribute('r', radius);
+  svg.appendChild(bg);
+  const prog = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  prog.setAttribute('class', 'circle-progress');
+  prog.setAttribute('cx', '60');
+  prog.setAttribute('cy', '60');
+  prog.setAttribute('r', radius);
+  prog.setAttribute('stroke-dasharray', circumference);
+  const clamped = Math.max(0, Math.min(perc, 100));
+  prog.setAttribute('stroke-dashoffset', circumference);
+  prog.style.stroke = colorFromPercent(perc);
+  svg.appendChild(prog);
+  wrapper.appendChild(svg);
+  const icon = document.createElement('img');
+  icon.className = 'circle-icon';
+  icon.src = iconSrc;
+  icon.alt = label;
+  wrapper.appendChild(icon);
+  setTimeout(() => {
+    prog.setAttribute('stroke-dashoffset', circumference * (1 - clamped / 100));
+  }, 50);
+  const value = document.createElement('div');
+  value.className = 'circle-value';
+  value.textContent = `${Math.round(perc)}%`;
+  wrapper.appendChild(value);
+  const labelEl = document.createElement('div');
+  labelEl.className = 'circle-label';
+  labelEl.textContent = label;
+  wrapper.appendChild(labelEl);
+  if (extraText) {
+    const extra = document.createElement('div');
+    extra.className = 'circle-extra';
+    extra.textContent = extraText;
+    wrapper.appendChild(extra);
+  }
+  return wrapper;
+}
+
+function calcModeStats(mode) {
+  const stats = modeStats[mode] || {};
+  const total = stats.totalPhrases || 0;
+  const correct = stats.correct || 0;
+  const report = stats.report || 0;
+  const totalTime = stats.totalTime || 0;
+  const accPerc = total ? (correct / total * 100) : 0;
+  const avg = total ? (totalTime / total / 1000) : 0;
+  const goal = timeGoals[mode] || MAX_TIME;
+  let timePerc = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
+  if (avg >= MAX_TIME) timePerc = 0;
+  if ([2, 3, 6].includes(mode) && total) timePerc += 20;
+  const notReportPerc = total ? (100 - (report / total * 100)) : 100;
+  return { accPerc, timePerc, avg, notReportPerc };
+}
+
+function calcGeneralStats() {
+  const modes = [2, 3, 4, 5, 6];
+  let totalPhrases = 0, totalCorrect = 0, totalTime = 0, totalReport = 0;
+  let timePercSum = 0, timePercCount = 0;
+  modes.forEach(m => {
+    const s = modeStats[m] || {};
+    totalPhrases += s.totalPhrases || 0;
+    totalCorrect += s.correct || 0;
+    totalTime += s.totalTime || 0;
+    totalReport += s.report || 0;
+    const tp = calcModeStats(m).timePerc;
+    if (tp >= 1) {
+      timePercSum += tp;
+      timePercCount++;
+    }
+  });
+  const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
+  const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
+  const timePerc = timePercCount ? (timePercSum / timePercCount) : 0;
+  const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
+  return { accPerc, timePerc, avg, notReportPerc };
+}
+
+function updateGeneralCircles() {
+  const { accPerc, timePerc } = calcGeneralStats();
+  const scoreWrapper = document.getElementById('general-score-circle');
+  const speedWrapper = document.getElementById('general-speed-circle');
+  if (scoreWrapper) {
+    scoreWrapper.innerHTML = '';
+    scoreWrapper.appendChild(
+      createStatCircle(accPerc, 'Pontuação Geral', 'selos%20modos%20de%20jogo/precisao.png')
+    );
+  }
+  if (speedWrapper) {
+    speedWrapper.innerHTML = '';
+    speedWrapper.appendChild(
+      createStatCircle(timePerc, 'Velocidade Geral', 'selos%20modos%20de%20jogo/velocidade.png')
+    );
+  }
+}
+
 let introProgressInterval = null;
 
 function startIntroProgress(duration) {
@@ -852,6 +966,7 @@ function beginGame() {
       icon.style.display = 'block';
       icon.onclick = () => { if (paused) resumeGame(); };
     }
+    updateGeneralCircles();
     const texto = document.getElementById('texto-exibicao');
     if (texto) texto.style.opacity = '1';
     updateLevelIcon();
