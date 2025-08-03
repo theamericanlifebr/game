@@ -9,6 +9,7 @@ async function initAuth() {
   const stored = localStorage.getItem('currentUser');
   if (stored) {
     currentUser = JSON.parse(stored);
+    localStorage.setItem('modeStats', JSON.stringify(currentUser.stats || {}));
     if (nav) nav.style.display = 'flex';
     if (menu) menu.style.display = 'flex';
     await initGame();
@@ -41,6 +42,8 @@ async function handleLogin(e) {
         stats = await statsRes.json();
       }
     } catch {}
+    localStorage.setItem('modeStats', JSON.stringify(stats));
+    modeStats = stats;
     currentUser = { username, stats };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     const screen = document.getElementById('login-screen');
@@ -62,4 +65,10 @@ function saveUserPerformance(stats) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: currentUser.username, stats })
   }).catch(() => {});
+}
+
+function logout() {
+  localStorage.removeItem('currentUser');
+  localStorage.removeItem('modeStats');
+  currentUser = null;
 }
