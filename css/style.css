@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%);
   font-family: 'Open Sans', sans-serif;
 }
 
@@ -253,18 +253,21 @@ body.dark-mode #clock {
 }
 
 #mode-stats {
-  position: absolute;
-  top: 20px;
-  left: 0;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 40px;
+  margin-top: 100px;
 }
 
-#mode-stats .stat-text {
+#mode-stats .stat-circle {
   width: 180px;
+  height: 230px;
+}
+
+#mode-stats .stat-circle svg {
+  width: 180px;
+  height: 180px;
 }
 
 #mode-icon {
@@ -277,7 +280,7 @@ body.dark-mode #clock {
 
 #mode-buttons {
   position: fixed;
-  bottom: 20px;
+  bottom: 135px;
   left: 0;
   width: 100%;
   display: flex;
@@ -465,12 +468,8 @@ body.dark-mode #clock {
   font-family: 'Open Sans', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #555;
-  text-align: center;
-}
-
-body.dark-mode .circle-value {
   color: #fff;
+  text-align: center;
 }
 
 .circle-label {
@@ -485,18 +484,6 @@ body.dark-mode .circle-value {
   font-family: 'Open Sans', sans-serif;
   margin-top: 7px;
   text-align: center;
-}
-.stat-text {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 18px;
-  text-align: center;
-  margin: 10px 0;
-}
-.stat-label {
-  font-weight: 600;
-}
-.stat-value {
-  font-weight: 700;
 }
 .ranking-title-blue {
   color: blue;

@@ -624,19 +624,48 @@ function colorFromPercent(perc) {
 
 function createStatCircle(perc, label, iconSrc, extraText) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'stat-text';
-  const labelEl = document.createElement('span');
-  labelEl.className = 'stat-label';
-  labelEl.textContent = `${label}: `;
-  const value = document.createElement('span');
-  value.className = 'stat-value';
+  wrapper.className = 'stat-circle';
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 120 120');
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('class', 'circle-bg');
+  bg.setAttribute('cx', '60');
+  bg.setAttribute('cy', '60');
+  bg.setAttribute('r', radius);
+  svg.appendChild(bg);
+  const prog = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  prog.setAttribute('class', 'circle-progress');
+  prog.setAttribute('cx', '60');
+  prog.setAttribute('cy', '60');
+  prog.setAttribute('r', radius);
+  prog.setAttribute('stroke-dasharray', circumference);
+  const clamped = Math.max(0, Math.min(perc, 100));
+  prog.setAttribute('stroke-dashoffset', circumference);
+  prog.style.stroke = colorFromPercent(perc);
+  svg.appendChild(prog);
+  wrapper.appendChild(svg);
+  const icon = document.createElement('img');
+  icon.className = 'circle-icon';
+  icon.src = iconSrc;
+  icon.alt = label;
+  wrapper.appendChild(icon);
+  setTimeout(() => {
+    prog.setAttribute('stroke-dashoffset', circumference * (1 - clamped / 100));
+  }, 50);
+  const value = document.createElement('div');
+  value.className = 'circle-value';
   value.textContent = `${Math.round(perc)}%`;
-  wrapper.appendChild(labelEl);
   wrapper.appendChild(value);
+  const labelEl = document.createElement('div');
+  labelEl.className = 'circle-label';
+  labelEl.textContent = label;
+  wrapper.appendChild(labelEl);
   if (extraText) {
-    const extra = document.createElement('span');
-    extra.className = 'stat-extra';
-    extra.textContent = ` ${extraText}`;
+    const extra = document.createElement('div');
+    extra.className = 'circle-extra';
+    extra.textContent = extraText;
     wrapper.appendChild(extra);
   }
   return wrapper;
@@ -654,31 +683,31 @@ function calcModeStats(mode) {
   let timePerc = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
   if (avg >= MAX_TIME) timePerc = 0;
   if ([2, 3, 6].includes(mode) && total) timePerc += 20;
-  if (total) timePerc += 12;
-  if (timePerc > 100) timePerc = 100;
   const notReportPerc = total ? (100 - (report / total * 100)) : 100;
   return { accPerc, timePerc, avg, notReportPerc };
 }
 
 function calcGeneralStats() {
   const modes = [2, 3, 4, 5, 6];
-  let accSum = 0, accCount = 0;
-  let timeSum = 0, timeCount = 0;
+  let totalPhrases = 0, totalCorrect = 0, totalTime = 0, totalReport = 0;
+  let timePercSum = 0, timePercCount = 0;
   modes.forEach(m => {
     const s = modeStats[m] || {};
-    if (s.totalPhrases > 0) {
-      const stats = calcModeStats(m);
-      accSum += stats.accPerc;
-      accCount++;
-      if (stats.timePerc > 0) {
-        timeSum += stats.timePerc;
-        timeCount++;
-      }
+    totalPhrases += s.totalPhrases || 0;
+    totalCorrect += s.correct || 0;
+    totalTime += s.totalTime || 0;
+    totalReport += s.report || 0;
+    const tp = calcModeStats(m).timePerc;
+    if (tp >= 1) {
+      timePercSum += tp;
+      timePercCount++;
     }
   });
-  const accPerc = accCount ? (accSum / accCount) : 0;
-  const timePerc = timeCount ? (timeSum / timeCount) : 0;
-  return { accPerc, timePerc };
+  const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
+  const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
+  const timePerc = timePercCount ? (timePercSum / timePercCount) : 0;
+  const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
+  return { accPerc, timePerc, avg, notReportPerc };
 }
 
 function updateGeneralCircles() {
