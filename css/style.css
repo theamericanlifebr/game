@@ -380,3 +380,76 @@ body.dark-mode #clock {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Play stats page */
+.mode-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60px;
+}
+
+.mode-section .mode-image {
+  width: 227px;
+  height: 227px;
+  object-fit: contain;
+  margin-bottom: 20px;
+}
+
+.graphs-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat-circle {
+  position: relative;
+  width: 120px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-circle svg {
+  width: 120px;
+  height: 120px;
+  transform: rotate(-90deg);
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #444;
+  stroke-width: 15;
+  opacity: 0.3;
+}
+
+.circle-progress {
+  fill: none;
+  stroke-width: 15;
+  stroke-linecap: round;
+}
+
+.circle-value {
+  position: absolute;
+  top: 60px;
+  left: 60px;
+  transform: translate(-50%, -50%);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.circle-label {
+  margin-top: 10px;
+  font-size: 14px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.circle-extra {
+  font-size: 12px;
+  font-family: 'Open Sans', sans-serif;
+  margin-top: 4px;
+}
