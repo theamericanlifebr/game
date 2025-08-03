@@ -125,18 +125,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function calcGeneralStats() {
     const modes = [2, 3, 4, 5, 6];
     let totalPhrases = 0, totalCorrect = 0, totalTime = 0, totalReport = 0;
-    let timePercSum = 0;
+    let timePercSum = 0, timePercCount = 0;
     modes.forEach(m => {
       const s = statsData[m] || {};
       totalPhrases += s.totalPhrases || 0;
       totalCorrect += s.correct || 0;
       totalTime += s.totalTime || 0;
       totalReport += s.report || 0;
-      timePercSum += calcModeStats(m).timePerc;
+      const tp = calcModeStats(m).timePerc;
+      if (tp >= 1) {
+        timePercSum += tp;
+        timePercCount++;
+      }
     });
     const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
     const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
-    const timePerc = modes.length ? (timePercSum / modes.length) : 0;
+    const timePerc = timePercCount ? (timePercSum / timePercCount) : 0;
     const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
     return { accPerc, timePerc, avg, notReportPerc };
   }
@@ -152,8 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
       } else {
         const { accPerc, timePerc, notReportPerc } = calcModeStats(mode);
+        const displayTime = mode === 5 ? timePerc * 1.75 : timePerc;
         container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
+        container.appendChild(createStatCircle(displayTime, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
         container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
       }
       container.style.opacity = 1;
