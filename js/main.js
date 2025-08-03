@@ -689,25 +689,23 @@ function calcModeStats(mode) {
 
 function calcGeneralStats() {
   const modes = [2, 3, 4, 5, 6];
-  let totalPhrases = 0, totalCorrect = 0, totalTime = 0, totalReport = 0;
-  let timePercSum = 0, timePercCount = 0;
+  let accSum = 0, accCount = 0;
+  let timeSum = 0, timeCount = 0;
   modes.forEach(m => {
     const s = modeStats[m] || {};
-    totalPhrases += s.totalPhrases || 0;
-    totalCorrect += s.correct || 0;
-    totalTime += s.totalTime || 0;
-    totalReport += s.report || 0;
-    const tp = calcModeStats(m).timePerc;
-    if (tp >= 1) {
-      timePercSum += tp;
-      timePercCount++;
+    if (s.totalPhrases > 0) {
+      const stats = calcModeStats(m);
+      accSum += stats.accPerc;
+      accCount++;
+      if (stats.timePerc > 0) {
+        timeSum += stats.timePerc;
+        timeCount++;
+      }
     }
   });
-  const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
-  const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
-  const timePerc = timePercCount ? (timePercSum / timePercCount) : 0;
-  const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
-  return { accPerc, timePerc, avg, notReportPerc };
+  const accPerc = accCount ? (accSum / accCount) : 0;
+  const timePerc = timeCount ? (timeSum / timeCount) : 0;
+  return { accPerc, timePerc };
 }
 
 function updateGeneralCircles() {
