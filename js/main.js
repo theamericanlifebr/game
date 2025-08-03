@@ -624,48 +624,19 @@ function colorFromPercent(perc) {
 
 function createStatCircle(perc, label, iconSrc, extraText) {
   const wrapper = document.createElement('div');
-  wrapper.className = 'stat-circle';
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', '0 0 120 120');
-  const radius = 38;
-  const circumference = 2 * Math.PI * radius;
-  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  bg.setAttribute('class', 'circle-bg');
-  bg.setAttribute('cx', '60');
-  bg.setAttribute('cy', '60');
-  bg.setAttribute('r', radius);
-  svg.appendChild(bg);
-  const prog = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  prog.setAttribute('class', 'circle-progress');
-  prog.setAttribute('cx', '60');
-  prog.setAttribute('cy', '60');
-  prog.setAttribute('r', radius);
-  prog.setAttribute('stroke-dasharray', circumference);
-  const clamped = Math.max(0, Math.min(perc, 100));
-  prog.setAttribute('stroke-dashoffset', circumference);
-  prog.style.stroke = colorFromPercent(perc);
-  svg.appendChild(prog);
-  wrapper.appendChild(svg);
-  const icon = document.createElement('img');
-  icon.className = 'circle-icon';
-  icon.src = iconSrc;
-  icon.alt = label;
-  wrapper.appendChild(icon);
-  setTimeout(() => {
-    prog.setAttribute('stroke-dashoffset', circumference * (1 - clamped / 100));
-  }, 50);
-  const value = document.createElement('div');
-  value.className = 'circle-value';
+  wrapper.className = 'stat-text';
+  const labelEl = document.createElement('span');
+  labelEl.className = 'stat-label';
+  labelEl.textContent = `${label}: `;
+  const value = document.createElement('span');
+  value.className = 'stat-value';
   value.textContent = `${Math.round(perc)}%`;
-  wrapper.appendChild(value);
-  const labelEl = document.createElement('div');
-  labelEl.className = 'circle-label';
-  labelEl.textContent = label;
   wrapper.appendChild(labelEl);
+  wrapper.appendChild(value);
   if (extraText) {
-    const extra = document.createElement('div');
-    extra.className = 'circle-extra';
-    extra.textContent = extraText;
+    const extra = document.createElement('span');
+    extra.className = 'stat-extra';
+    extra.textContent = ` ${extraText}`;
     wrapper.appendChild(extra);
   }
   return wrapper;
@@ -683,6 +654,8 @@ function calcModeStats(mode) {
   let timePerc = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
   if (avg >= MAX_TIME) timePerc = 0;
   if ([2, 3, 6].includes(mode) && total) timePerc += 20;
+  if (total) timePerc += 12;
+  if (timePerc > 100) timePerc = 100;
   const notReportPerc = total ? (100 - (report / total * 100)) : 100;
   return { accPerc, timePerc, avg, notReportPerc };
 }
