@@ -441,7 +441,7 @@ body.dark-mode #clock {
 
 .circle-icon {
   position: absolute;
-  top: 50%;
+  top: calc(50% - 30px);
   left: 50%;
   transform: translate(-50%, -50%);
   width: 60px;
@@ -459,7 +459,7 @@ body.dark-mode #clock {
 }
 
 .circle-label {
-  margin-top: 18px;
+  margin-top: 8px;
   font-size: 18px;
   font-family: 'Open Sans', sans-serif;
   text-align: center;
