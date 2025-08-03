@@ -156,6 +156,7 @@ let mostrarTexto = 'pt';
 let voz = 'en';
 let esperadoLang = 'pt';
 let timerInterval = null;
+let inputTimeout = null;
 const TOTAL_FRASES = 25;
 let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
@@ -221,7 +222,10 @@ const modeIntros = {
 
 function ensureModeStats(mode) {
   if (!modeStats[mode]) {
-    modeStats[mode] = { totalPhrases: 0, totalTime: 0, correct: 0, wrong: 0, report: 0 };
+    modeStats[mode] = { totalPhrases: 0, totalTime: 0, correct: 0, wrong: 0, report: 0, correctRanking: {}, wrongRanking: {} };
+  } else {
+    if (!modeStats[mode].correctRanking) modeStats[mode].correctRanking = {};
+    if (!modeStats[mode].wrongRanking) modeStats[mode].wrongRanking = {};
   }
   return modeStats[mode];
 }
@@ -805,6 +809,7 @@ function carregarFrases() {
 }
 
 function mostrarFrase() {
+  if (inputTimeout) clearTimeout(inputTimeout);
   if (fraseIndex >= frasesArr.length) fraseIndex = 0;
   const [pt, en] = frasesArr[fraseIndex];
   const texto = document.getElementById("texto-exibicao");
@@ -828,6 +833,9 @@ function mostrarFrase() {
   prizeStart = Date.now();
   prizeTimer = setInterval(atualizarBarraProgresso, 50);
   atualizarBarraProgresso();
+  if (selectedMode >= 2) {
+    inputTimeout = setTimeout(handleNoInput, 6000);
+  }
 }
 
 function flashSuccess(callback) {
@@ -862,8 +870,16 @@ function flashError(expected, callback) {
   }, 1500);
 }
 
+function handleNoInput() {
+  if (bloqueado || selectedMode === 1) return;
+  const input = document.getElementById('pt');
+  input.value = '[no input]';
+  verificarResposta();
+}
+
 function verificarResposta() {
   if (bloqueado) return;
+  if (inputTimeout) clearTimeout(inputTimeout);
   if (timerInterval) clearInterval(timerInterval);
   const input = document.getElementById("pt");
   const resposta = input.value.trim();
@@ -952,6 +968,10 @@ function verificarResposta() {
   } else {
     stats.totalPhrases++;
     stats.wrong++;
+    const expectedPhrase = esperado;
+    const userPhrase = resposta || '[no input]';
+    stats.correctRanking[expectedPhrase] = (stats.correctRanking[expectedPhrase] || 0) + 1;
+    stats.wrongRanking[userPhrase] = (stats.wrongRanking[userPhrase] || 0) + 1;
     saveModeStats();
     document.getElementById("somErro").play();
     errosTotais++;
