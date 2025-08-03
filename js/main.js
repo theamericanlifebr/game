@@ -455,8 +455,18 @@ function enforceStarClick() {
     st.addEventListener('click', () => {
       clearTimeout(timeout);
       all.forEach(el => { el.style.pointerEvents = ''; });
+      startStatsSequence();
     }, { once: true });
   });
+}
+
+function startStatsSequence() {
+  const audio = new Audio('gamesounds/nivel2.mp3');
+  audio.play();
+  setTimeout(() => {
+    localStorage.setItem('statsSequence', 'true');
+    window.location.href = 'play.html';
+  }, 2000);
 }
 
 function menuLevelUpSequence() {

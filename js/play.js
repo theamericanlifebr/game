@@ -176,4 +176,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   selectMode(1);
+
+  const seq = localStorage.getItem('statsSequence');
+  if (seq === 'true') {
+    localStorage.removeItem('statsSequence');
+    let delay = 3000;
+    [2, 3, 4, 5, 6].forEach(mode => {
+      setTimeout(() => selectMode(mode), delay);
+      delay += 1500;
+    });
+  }
 });
