@@ -120,7 +120,13 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         startGame(getHighestUnlockedMode());
       }
     } else {
-      if (normCmd.includes('reportar') || normCmd.includes('report')) {
+      if (
+        normCmd.includes('reportar') ||
+        normCmd.includes('report') ||
+        normCmd.includes('my star') ||
+        normCmd.includes('mystar') ||
+        normCmd.includes('estrela')
+      ) {
         reportLastError();
       } else {
         document.getElementById("pt").value = transcript;
@@ -1294,21 +1300,21 @@ async function initGame() {
   });
 }
 
-window.onload = async () => {
-  document.querySelectorAll('#top-nav a').forEach(a => {
-    a.addEventListener('click', stopCurrentGame);
-  });
-  const homeLink = document.getElementById('home-link');
-  if (homeLink) {
-    homeLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      goHome();
+  window.onload = async () => {
+    document.querySelectorAll('#top-nav a').forEach(a => {
+      a.addEventListener('click', stopCurrentGame);
     });
-  }
-  await initAuth();
-  window.addEventListener('beforeunload', () => {
-    recordModeTime(selectedMode);
-    saveModeStats();
-    stopCurrentGame();
-  });
-};
+    const homeLink = document.getElementById('home-link');
+    if (homeLink) {
+      homeLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        goHome();
+      });
+    }
+    await initGame();
+    window.addEventListener('beforeunload', () => {
+      recordModeTime(selectedMode);
+      saveModeStats();
+      stopCurrentGame();
+    });
+  };

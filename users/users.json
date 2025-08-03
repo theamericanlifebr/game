@@ -1,9 +1,0 @@
-{
-  "users": [
-    { "username": "usuario1", "password": "senha01", "email": "usuario1@example.com", "confirmed": true },
-    { "username": "usuario2", "password": "senha02", "email": "usuario2@example.com", "confirmed": true },
-    { "username": "usuario3", "password": "senha03", "email": "usuario3@example.com", "confirmed": true },
-    { "username": "usuario4", "password": "senha04", "email": "usuario4@example.com", "confirmed": true },
-    { "username": "usuario5", "password": "senha05", "email": "usuario5@example.com", "confirmed": true }
-  ]
-}
