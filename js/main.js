@@ -120,7 +120,9 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         startGame(getHighestUnlockedMode());
       }
     } else {
-      if (
+      if (normCmd.includes('pause') || normCmd.includes('pausa')) {
+        pauseGame();
+      } else if (
         normCmd.includes('reportar') ||
         normCmd.includes('report') ||
         normCmd.includes('my star') ||
@@ -203,6 +205,9 @@ let modeStartTimes = {};
 let lastWasError = false;
 let lastReward = 0;
 let lastPenalty = 0;
+let paused = false;
+let consecutiveErrors = 0;
+let pauseInterval = null;
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -255,6 +260,9 @@ function saveTotals() {
   localStorage.setItem('errosTotais', errosTotais);
   localStorage.setItem('tentativasTotais', tentativasTotais);
   localStorage.setItem('points', points);
+  if (!paused && points >= 25115) {
+    pauseGame();
+  }
 }
 
 saveTotals();
@@ -281,6 +289,61 @@ function stopCurrentGame() {
     reconhecimentoAtivo = false;
     try { reconhecimento.stop(); } catch {}
   }
+}
+
+function pauseGame(noPenalty = false) {
+  if (pauseInterval) {
+    clearInterval(pauseInterval);
+    pauseInterval = null;
+  }
+  if (paused && noPenalty) return;
+  paused = true;
+  stopCurrentGame();
+  bloqueado = true;
+  const texto = document.getElementById('texto-exibicao');
+  if (texto) {
+    texto.style.transition = 'opacity 500ms linear';
+    texto.style.opacity = '0';
+  }
+  const input = document.getElementById('pt');
+  if (input) input.disabled = true;
+  if (!noPenalty) {
+    pauseInterval = setInterval(() => {
+      points = Math.max(0, points - 250);
+      saveTotals();
+      atualizarBarraProgresso();
+    }, 1000);
+  }
+}
+
+function resumeGame() {
+  if (!paused) return;
+  paused = false;
+  consecutiveErrors = 0;
+  if (pauseInterval) {
+    clearInterval(pauseInterval);
+    pauseInterval = null;
+  }
+  if (points >= 25115) {
+    pauseGame();
+    return;
+  }
+  const texto = document.getElementById('texto-exibicao');
+  if (texto) {
+    texto.style.transition = 'opacity 500ms linear';
+    texto.style.opacity = '1';
+  }
+  const input = document.getElementById('pt');
+  if (input) {
+    input.disabled = false;
+    input.value = '';
+  }
+  bloqueado = false;
+  if (reconhecimento) {
+    reconhecimentoAtivo = true;
+    reconhecimento.start();
+  }
+  continuar();
 }
 
 function reportLastError() {
@@ -697,6 +760,8 @@ function showLevelUp(callback) {
 function beginGame() {
   sessionStart = Date.now();
   modeStartTimes[selectedMode] = Date.now();
+  consecutiveErrors = 0;
+  paused = false;
   const start = () => {
     document.getElementById('visor').style.display = 'flex';
     const icon = document.getElementById('mode-icon');
@@ -706,6 +771,7 @@ function beginGame() {
       const ratio = Math.max(0, Math.min(points, threshold)) / threshold;
       icon.style.opacity = ratio;
       icon.style.display = 'block';
+      icon.onclick = () => { if (paused) resumeGame(); };
     }
     const texto = document.getElementById('texto-exibicao');
     if (texto) texto.style.opacity = '1';
@@ -1014,6 +1080,7 @@ function verificarResposta() {
         points += 1000;
       }
       saveTotals();
+      consecutiveErrors = 0;
       resultado.textContent = '';
       const threshold = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
       const reached = points >= threshold && !completedModes[selectedMode];
@@ -1036,12 +1103,17 @@ function verificarResposta() {
       input.disabled = true;
       bloqueado = true;
       falar(esperado, esperadoLang);
+      consecutiveErrors++;
       flashError(esperado, () => {
         input.disabled = false;
         bloqueado = false;
         points = Math.max(0, points - penalty);
         saveTotals();
-        continuar();
+        if (consecutiveErrors >= 3) {
+          pauseGame();
+        } else {
+          continuar();
+        }
       });
     }
     atualizarBarraProgresso();
@@ -1134,13 +1206,19 @@ function nextMode() {
 
 
 function goHome() {
-  stopCurrentGame();
+  pauseGame(true);
+  paused = false;
+  consecutiveErrors = 0;
+  bloqueado = false;
   if (sessionStart) {
     const total = parseInt(localStorage.getItem('totalTime') || '0', 10);
     localStorage.setItem('totalTime', total + (Date.now() - sessionStart));
     sessionStart = null;
   }
   recordModeTime(selectedMode);
+  points = INITIAL_POINTS;
+  saveTotals();
+  atualizarBarraProgresso();
   document.getElementById('visor').style.display = 'none';
   document.getElementById('menu').style.display = 'flex';
   const icon = document.getElementById('mode-icon');
@@ -1237,15 +1315,24 @@ async function initGame() {
       }, { once: true });
     }
     ilifeActive = true;
-  } else if (!tutorialDone) {
-    startTutorial();
   } else {
-    const logoTop = document.getElementById('logo-top');
-    const levelIcon = document.getElementById('nivel-indicador');
-    const menuLogo = document.getElementById('menu-logo');
-    if (logoTop) logoTop.style.display = 'block';
-    if (levelIcon) levelIcon.style.display = 'block';
-    if (menuLogo) menuLogo.style.display = 'block';
+    const screen = document.getElementById('ilife-screen');
+    if (screen) screen.style.display = 'none';
+    const menu = document.getElementById('menu');
+    if (menu) menu.style.display = 'flex';
+    points = INITIAL_POINTS;
+    saveTotals();
+    atualizarBarraProgresso();
+    if (!tutorialDone) {
+      startTutorial();
+    } else {
+      const logoTop = document.getElementById('logo-top');
+      const levelIcon = document.getElementById('nivel-indicador');
+      const menuLogo = document.getElementById('menu-logo');
+      if (logoTop) logoTop.style.display = 'block';
+      if (levelIcon) levelIcon.style.display = 'block';
+      if (menuLogo) menuLogo.style.display = 'block';
+    }
   }
 
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
@@ -1275,6 +1362,10 @@ async function initGame() {
     if (ilifeActive && e.code === 'Space') {
       const lock = document.getElementById('somLock');
       if (lock) { lock.currentTime = 0; lock.play(); }
+      return;
+    }
+    if (e.key.toLowerCase() === 'p') {
+      if (!paused) pauseGame();
       return;
     }
     if (e.key === 'r') falarFrase();
