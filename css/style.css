@@ -441,7 +441,7 @@ body.dark-mode #clock {
 
 .circle-value {
   position: absolute;
-  top: 50%;
+  top: calc(50% - 12px);
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Open Sans', sans-serif;

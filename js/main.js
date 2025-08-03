@@ -485,6 +485,9 @@ function startGame(modo) {
     recordModeTime(prevMode);
   }
   selectedMode = modo;
+  points = modo === 1 ? 0 : INITIAL_POINTS;
+  saveTotals();
+  atualizarBarraProgresso();
   updateModeIcons();
   listeningForCommand = false;
   document.getElementById('menu').style.display = 'none';
