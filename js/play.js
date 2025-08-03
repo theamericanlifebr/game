@@ -91,34 +91,72 @@ function createStatCircle(perc, label, valueText, extraText) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('play-content');
+  container.style.transition = 'opacity 0.2s';
+  const buttons = document.querySelectorAll('#mode-buttons img');
   const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
   const timeGoals = {1:1.8, 2:2.2, 3:2.2, 4:3.0, 5:3.5, 6:2.0};
   const MAX_TIME = 6.0;
-  for (let i = 1; i <= 6; i++) {
-    const stats = statsData[i] || {};
+
+  function calcModeStats(mode) {
+    const stats = statsData[mode] || {};
     const total = stats.totalPhrases || 0;
     const correct = stats.correct || 0;
     const report = stats.report || 0;
     const totalTime = stats.totalTime || 0;
     const accPerc = total ? (correct / total * 100) : 0;
     const avg = total ? (totalTime / total / 1000) : 0;
-    const goal = timeGoals[i] || 6;
+    const goal = timeGoals[mode] || MAX_TIME;
     let timePerc = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
     if (avg >= MAX_TIME) timePerc = 0;
     const notReportPerc = total ? (100 - (report / total * 100)) : 100;
-    const section = document.createElement('div');
-    section.className = 'mode-section';
-    const img = document.createElement('img');
-    img.src = `selos%20modos%20de%20jogo/modo${i}.png`;
-    img.alt = `Modo ${i}`;
-    img.className = 'mode-image';
-    section.appendChild(img);
-    const graphs = document.createElement('div');
-    graphs.className = 'graphs-row';
-    graphs.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
-    graphs.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`, `(${avg.toFixed(2)})s`));
-    graphs.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
-    section.appendChild(graphs);
-    container.appendChild(section);
+    return { accPerc, timePerc, avg, notReportPerc };
   }
+
+  function calcGeneralStats() {
+    const modes = [2, 3, 4, 5, 6];
+    let totalPhrases = 0, totalCorrect = 0, totalTime = 0;
+    modes.forEach(m => {
+      const s = statsData[m] || {};
+      totalPhrases += s.totalPhrases || 0;
+      totalCorrect += s.correct || 0;
+      totalTime += s.totalTime || 0;
+    });
+    const accPerc = totalPhrases ? (totalCorrect / totalPhrases * 100) : 0;
+    const avg = totalPhrases ? (totalTime / totalPhrases / 1000) : 0;
+    const goalAvg = modes.reduce((sum, m) => sum + (timeGoals[m] || MAX_TIME), 0) / modes.length;
+    let timePerc = totalPhrases ? ((MAX_TIME - avg) / (MAX_TIME - goalAvg) * 100) : 0;
+    if (avg >= MAX_TIME) timePerc = 0;
+    return { accPerc, timePerc, avg };
+  }
+
+  function render(mode) {
+    container.style.opacity = 0;
+    setTimeout(() => {
+      container.innerHTML = '';
+      if (mode === 1) {
+        const { accPerc, timePerc, avg } = calcGeneralStats();
+        container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
+        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`, `(${avg.toFixed(2)})s`));
+      } else {
+        const { accPerc, timePerc, avg, notReportPerc } = calcModeStats(mode);
+        container.appendChild(createStatCircle(accPerc, 'Precisão', `${Math.round(accPerc)}%`));
+        container.appendChild(createStatCircle(timePerc, 'Tempo', `${Math.round(timePerc)}%`, `(${avg.toFixed(2)})s`));
+        container.appendChild(createStatCircle(notReportPerc, 'Report', `${Math.round(notReportPerc)}%`));
+      }
+      container.style.opacity = 1;
+    }, 150);
+  }
+
+  function selectMode(mode) {
+    buttons.forEach(img => {
+      img.style.opacity = img.dataset.mode == mode ? '1' : '0.3';
+    });
+    render(mode);
+  }
+
+  buttons.forEach(img => {
+    img.addEventListener('click', () => selectMode(parseInt(img.dataset.mode, 10)));
+  });
+
+  selectMode(1);
 });
