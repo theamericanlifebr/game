@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
   font-family: 'Open Sans', sans-serif;
 }
 
@@ -253,11 +253,14 @@ body.dark-mode #clock {
 }
 
 #mode-stats {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 40px;
-  margin-top: 100px;
 }
 
 #mode-stats .stat-circle {
@@ -280,7 +283,7 @@ body.dark-mode #clock {
 
 #mode-buttons {
   position: fixed;
-  bottom: 135px;
+  bottom: 20px;
   left: 0;
   width: 100%;
   display: flex;
@@ -468,8 +471,12 @@ body.dark-mode #clock {
   font-family: 'Open Sans', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: #555;
   text-align: center;
+}
+
+body.dark-mode .circle-value {
+  color: #fff;
 }
 
 .circle-label {
