@@ -68,10 +68,13 @@ function createStatCircle(perc, label, valueText, extraText) {
   prog.setAttribute('r', radius);
   prog.setAttribute('stroke-dasharray', circumference);
   const clamped = Math.max(0, Math.min(perc, 100));
-  prog.setAttribute('stroke-dashoffset', circumference * (1 - clamped / 100));
+  prog.setAttribute('stroke-dashoffset', circumference);
   prog.style.stroke = colorFromPercent(perc);
   svg.appendChild(prog);
   wrapper.appendChild(svg);
+  setTimeout(() => {
+    prog.setAttribute('stroke-dashoffset', circumference * (1 - clamped / 100));
+  }, 50);
   const value = document.createElement('div');
   value.className = 'circle-value';
   value.textContent = valueText;
@@ -93,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('play-content');
   container.style.transition = 'opacity 0.2s';
   const buttons = document.querySelectorAll('#mode-buttons img');
+  const clickSound = new Audio('gamesounds/mododesbloqueado.mp3');
   const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
   const timeGoals = {1:1.8, 2:2.2, 3:2.2, 4:3.0, 5:3.5, 6:2.0};
   const MAX_TIME = 6.0;
@@ -155,7 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   buttons.forEach(img => {
-    img.addEventListener('click', () => selectMode(parseInt(img.dataset.mode, 10)));
+    img.addEventListener('click', () => {
+      clickSound.currentTime = 0;
+      clickSound.play();
+      selectMode(parseInt(img.dataset.mode, 10));
+    });
   });
 
   selectMode(1);
