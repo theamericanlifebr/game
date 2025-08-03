@@ -60,6 +60,8 @@ async function handleLogin(e) {
 
 function saveUserPerformance(stats) {
   if (!currentUser) return;
+  currentUser.stats = stats;
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
   fetch('/stats', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
