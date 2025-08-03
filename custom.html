@@ -22,20 +22,19 @@
       const s = sec % 60;
       return `${min}m ${s}s`;
     }
-    function createRankingTable(data, color) {
+    function createRankingTable(data, color, columns) {
       const table = document.createElement('table');
       table.className = `ranking-table ${color}`;
       const header = document.createElement('tr');
-      header.innerHTML = '<th>sentença</th><th>pontos</th>';
+      header.innerHTML = columns.map(c => `<th>${c.label}</th>`).join('');
       table.appendChild(header);
-      Object.entries(data).sort((a,b) => b[1]-a[1]).forEach(([phrase,count]) => {
+      data.forEach(item => {
         const row = document.createElement('tr');
-        const td1 = document.createElement('td');
-        td1.textContent = phrase;
-        const td2 = document.createElement('td');
-        td2.textContent = count;
-        row.appendChild(td1);
-        row.appendChild(td2);
+        columns.forEach(c => {
+          const td = document.createElement('td');
+          td.textContent = item[c.field];
+          row.appendChild(td);
+        });
         table.appendChild(row);
       });
       return table;
@@ -64,23 +63,51 @@
           <div class="custom-info">Média de tempo por frase: ${avg}</div>
           <div class="custom-info">Uso de reportar: ${reportPerc}%</div>
         `;
-        const blue = stats.correctRanking || {};
-        const red = stats.wrongRanking || {};
-        if (Object.keys(blue).length) {
-          const title = document.createElement('h2');
-          title.textContent = 'Ranking azul';
-          title.className = 'ranking-title-blue';
-          section.appendChild(title);
-          section.appendChild(createRankingTable(blue, 'blue'));
-        }
-        if (Object.keys(red).length) {
+        const red = stats.wrongRanking || [];
+        const green = stats.reportRanking || [];
+        if (red.length) {
           const title = document.createElement('h2');
           title.textContent = 'Ranking vermelho';
           title.className = 'ranking-title-red';
           section.appendChild(title);
-          section.appendChild(createRankingTable(red, 'red'));
+          section.appendChild(createRankingTable([...red].sort((a,b) => b.count - a.count), 'red', [
+            { field: 'expected', label: 'Esperado' },
+            { field: 'input', label: 'Entrada' },
+            { field: 'folder', label: 'Pasta' },
+            { field: 'count', label: 'Erros' }
+          ]));
+        }
+        if (green.length) {
+          const title = document.createElement('h2');
+          title.textContent = 'Ranking verde limão';
+          title.className = 'ranking-title-lime';
+          section.appendChild(title);
+          section.appendChild(createRankingTable(green, 'lime', [
+            { field: 'expected', label: 'Esperado' },
+            { field: 'input', label: 'Entrada' },
+            { field: 'folder', label: 'Pasta' },
+            { field: 'level', label: 'Nível de reports' }
+          ]));
         }
         container.appendChild(section);
+      }
+      const levelTitle = document.createElement('h1');
+      levelTitle.className = 'custom-title';
+      levelTitle.textContent = 'Detalhe dos níveis';
+      container.appendChild(levelTitle);
+      const details = JSON.parse(localStorage.getItem('levelDetails') || '[]');
+      if (details.length) {
+        const table = document.createElement('table');
+        table.className = 'ranking-table';
+        const header = document.createElement('tr');
+        header.innerHTML = '<th>Nível</th><th>Precisão</th><th>Velocidade</th><th>Reports</th>';
+        table.appendChild(header);
+        details.forEach(d => {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${d.level}</td><td>${d.accuracy}%</td><td>${d.speed}%</td><td>${d.reports}%</td>`;
+          table.appendChild(row);
+        });
+        container.appendChild(table);
       }
     });
   </script>

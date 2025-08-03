@@ -477,6 +477,9 @@ body.dark-mode #clock {
 .ranking-title-red {
   color: red;
 }
+.ranking-title-lime {
+  color: lime;
+}
 .ranking-table {
   margin: 10px auto;
   border-collapse: collapse;
@@ -492,5 +495,8 @@ body.dark-mode #clock {
 }
 .ranking-table.red {
   color: red;
+}
+.ranking-table.lime {
+  color: lime;
 }
 

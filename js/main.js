@@ -168,6 +168,7 @@ let voz = 'en';
 let esperadoLang = 'pt';
 let timerInterval = null;
 let inputTimeout = null;
+let lastExpected = '', lastInput = '', lastFolder = 1;
 const TOTAL_FRASES = 25;
 let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
@@ -236,10 +237,18 @@ const modeIntros = {
 
 function ensureModeStats(mode) {
   if (!modeStats[mode]) {
-    modeStats[mode] = { totalPhrases: 0, totalTime: 0, correct: 0, wrong: 0, report: 0, correctRanking: {}, wrongRanking: {} };
+    modeStats[mode] = {
+      totalPhrases: 0,
+      totalTime: 0,
+      correct: 0,
+      wrong: 0,
+      report: 0,
+      wrongRanking: [],
+      reportRanking: []
+    };
   } else {
-    if (!modeStats[mode].correctRanking) modeStats[mode].correctRanking = {};
-    if (!modeStats[mode].wrongRanking) modeStats[mode].wrongRanking = {};
+    if (!Array.isArray(modeStats[mode].wrongRanking)) modeStats[mode].wrongRanking = [];
+    if (!Array.isArray(modeStats[mode].reportRanking)) modeStats[mode].reportRanking = [];
   }
   return modeStats[mode];
 }
@@ -358,6 +367,13 @@ function reportLastError() {
   stats.correct++;
   stats.wrong = Math.max(0, stats.wrong - 1);
   stats.report++;
+  const totals = Object.values(modeStats).reduce((acc, s) => {
+    acc.report += s.report || 0;
+    acc.total += s.totalPhrases || 0;
+    return acc;
+  }, { report: 0, total: 0 });
+  const level = totals.total ? ((totals.report / totals.total) * 100).toFixed(2) : '0';
+  stats.reportRanking.push({ expected: lastExpected, input: lastInput, folder: lastFolder, level });
   saveModeStats();
 }
 
@@ -1071,7 +1087,6 @@ function verificarResposta() {
     if (correto) {
       stats.totalPhrases++;
       stats.correct++;
-      stats.correctRanking[expectedPhrase] = (stats.correctRanking[expectedPhrase] || 0) + 1;
       saveModeStats();
       document.getElementById("somAcerto").play();
       acertosTotais++;
@@ -1091,10 +1106,16 @@ function verificarResposta() {
     } else {
       stats.totalPhrases++;
       stats.wrong++;
-      stats.wrongRanking[expectedPhrase] = (stats.wrongRanking[expectedPhrase] || 0) + 1;
+      const wr = stats.wrongRanking;
+      const existing = wr.find(e => e.expected === expectedPhrase && e.input === resposta && e.folder === pastaAtual);
+      if (existing) existing.count++;
+      else wr.push({ expected: expectedPhrase, input: resposta, folder: pastaAtual, count: 1 });
       saveModeStats();
       document.getElementById("somErro").play();
       errosTotais++;
+      lastExpected = expectedPhrase;
+      lastInput = resposta;
+      lastFolder = pastaAtual;
       saveTotals();
       lastWasError = true;
       resultado.textContent = "";
@@ -1161,6 +1182,19 @@ function finishMode() {
   updateModeIcons();
 
   if (selectedMode === 6) {
+    const stats6 = ensureModeStats(6);
+    const total = stats6.totalPhrases || 0;
+    const acc = total ? (stats6.correct / total * 100).toFixed(2) : '0';
+    const avg = total ? (stats6.totalTime / total / 1000) : 0;
+    const MAX_TIME = 6.0;
+    const goal = 2.0;
+    let speed = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
+    if (avg >= MAX_TIME) speed = 0;
+    if (total) speed += 20;
+    const reportPerc = total ? (stats6.report / total * 100).toFixed(2) : '0';
+    const details = JSON.parse(localStorage.getItem('levelDetails') || '[]');
+    details.push({ level: pastaAtual + 1, accuracy: acc, speed: speed.toFixed(2), reports: reportPerc });
+    localStorage.setItem('levelDetails', JSON.stringify(details));
     document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]').forEach(img => {
       img.src = 'selos%20modos%20de%20jogo/modostar.png';
     });
