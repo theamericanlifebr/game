@@ -455,8 +455,16 @@ function enforceStarClick() {
     st.addEventListener('click', () => {
       clearTimeout(timeout);
       all.forEach(el => { el.style.pointerEvents = ''; });
+      startStatsSequence();
     }, { once: true });
   });
+}
+
+function startStatsSequence() {
+  localStorage.setItem('statsSequence', 'true');
+  setTimeout(() => {
+    window.location.href = 'play.html';
+  }, 2000);
 }
 
 function menuLevelUpSequence() {

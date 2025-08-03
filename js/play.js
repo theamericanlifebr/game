@@ -176,4 +176,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   selectMode(1);
+
+  const seq = localStorage.getItem('statsSequence');
+  if (seq === 'true') {
+    localStorage.removeItem('statsSequence');
+    setTimeout(() => {
+      const audio = new Audio('gamesounds/nivel2.mp3');
+      audio.play();
+    }, 1);
+    let delay = 3000;
+    [2, 3, 4, 5, 6].forEach(mode => {
+      setTimeout(() => selectMode(mode), delay);
+      delay += 1500;
+    });
+  }
 });
