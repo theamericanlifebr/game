@@ -235,6 +235,10 @@ function ensureModeStats(mode) {
 
 function saveModeStats() {
   localStorage.setItem('modeStats', JSON.stringify(modeStats));
+  if (typeof currentUser === 'object' && currentUser) {
+    currentUser.stats = modeStats;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  }
   if (typeof saveUserPerformance === 'function') {
     saveUserPerformance(modeStats);
   }
@@ -255,6 +259,21 @@ function recordModeTime(mode) {
     stats.totalTime += Date.now() - modeStartTimes[mode];
     modeStartTimes[mode] = null;
     saveModeStats();
+  }
+}
+
+function stopCurrentGame() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (prizeTimer) {
+    clearInterval(prizeTimer);
+    prizeTimer = null;
+  }
+  if (reconhecimento) {
+    reconhecimentoAtivo = false;
+    try { reconhecimento.stop(); } catch {}
   }
 }
 
@@ -337,6 +356,22 @@ function performMenuLevelUp() {
     atualizarBarraProgresso();
     levelUpReady = false;
   }, 500);
+}
+
+function enforceStarClick() {
+  const all = document.querySelectorAll('#menu-modes img, #mode-buttons img, #top-nav a');
+  all.forEach(el => { el.style.pointerEvents = 'none'; });
+  const stars = document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]');
+  stars.forEach(st => { st.style.pointerEvents = 'auto'; });
+  let timeout = setTimeout(() => {
+    if (stars[0]) stars[0].click();
+  }, 5000);
+  stars.forEach(st => {
+    st.addEventListener('click', () => {
+      clearTimeout(timeout);
+      all.forEach(el => { el.style.pointerEvents = ''; });
+    }, { once: true });
+  });
 }
 
 function menuLevelUpSequence() {
@@ -1031,6 +1066,7 @@ function atualizarBarraProgresso() {
 
 function finishMode() {
   if (completedModes[selectedMode]) return;
+  stopCurrentGame();
   completedModes[selectedMode] = true;
   localStorage.setItem('completedModes', JSON.stringify(completedModes));
   const next = selectedMode + 1;
@@ -1054,11 +1090,13 @@ function finishMode() {
     if (star) { star.currentTime = 0; star.play(); }
     levelUpReady = true;
     goHome();
+    enforceStarClick();
   }
 }
 
 function nextMode() {
   if (transitioning) return;
+  stopCurrentGame();
   transitioning = true;
   if (selectedMode < 6) {
     const current = selectedMode;
@@ -1090,6 +1128,7 @@ function nextMode() {
 
 
 function goHome() {
+  stopCurrentGame();
   if (sessionStart) {
     const total = parseInt(localStorage.getItem('totalTime') || '0', 10);
     localStorage.setItem('totalTime', total + (Date.now() - sessionStart));
@@ -1205,6 +1244,7 @@ async function initGame() {
 
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
     img.addEventListener('click', () => {
+      stopCurrentGame();
       const modo = parseInt(img.dataset.mode, 10);
       if (modo === 6 && completedModes[6] && levelUpReady) {
         performMenuLevelUp();
@@ -1255,6 +1295,9 @@ async function initGame() {
 }
 
 window.onload = async () => {
+  document.querySelectorAll('#top-nav a').forEach(a => {
+    a.addEventListener('click', stopCurrentGame);
+  });
   const homeLink = document.getElementById('home-link');
   if (homeLink) {
     homeLink.addEventListener('click', (e) => {
@@ -1263,4 +1306,9 @@ window.onload = async () => {
     });
   }
   await initAuth();
+  window.addEventListener('beforeunload', () => {
+    recordModeTime(selectedMode);
+    saveModeStats();
+    stopCurrentGame();
+  });
 };
