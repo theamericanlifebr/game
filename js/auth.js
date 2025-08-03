@@ -25,31 +25,34 @@ async function handleLogin(e) {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value.trim();
   if (!username || !password) return;
-  let res = await fetch('/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-  if (res.status === 404) {
-    res = await fetch('/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-  }
-  if (!res.ok) {
+  try {
+    const usersRes = await fetch('users/users.json');
+    if (!usersRes.ok) throw new Error('missing users');
+    const data = await usersRes.json();
+    const user = data.users.find(u => u.username === username && u.password === password);
+    if (!user) {
+      alert('Falha no login');
+      return;
+    }
+    let stats = {};
+    try {
+      const statsRes = await fetch(`users/${username}/stats.json`);
+      if (statsRes.ok) {
+        stats = await statsRes.json();
+      }
+    } catch {}
+    currentUser = { username, stats };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    const screen = document.getElementById('login-screen');
+    if (screen) screen.style.display = 'none';
+    const nav = document.getElementById('top-nav');
+    const menu = document.getElementById('menu');
+    if (nav) nav.style.display = 'flex';
+    if (menu) menu.style.display = 'flex';
+    await initGame();
+  } catch (err) {
     alert('Falha no login');
-    return;
   }
-  currentUser = await res.json();
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  const screen = document.getElementById('login-screen');
-  if (screen) screen.style.display = 'none';
-  const nav = document.getElementById('top-nav');
-  const menu = document.getElementById('menu');
-  if (nav) nav.style.display = 'flex';
-  if (menu) menu.style.display = 'flex';
-  await initGame();
 }
 
 function saveUserPerformance(stats) {
@@ -58,5 +61,5 @@ function saveUserPerformance(stats) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username: currentUser.username, stats })
-  });
+  }).catch(() => {});
 }
