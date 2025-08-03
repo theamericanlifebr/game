@@ -283,6 +283,13 @@ body.dark-mode #clock {
   transition: opacity 0.2s linear;
 }
 
+#play-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
 @media (max-width: 600px) {
   #mode-icon {
     width: 150px;
@@ -405,16 +412,16 @@ body.dark-mode #clock {
 
 .stat-circle {
   position: relative;
-  width: 120px;
-  height: 160px;
+  width: 210px;
+  height: 280px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .stat-circle svg {
-  width: 120px;
-  height: 120px;
+  width: 210px;
+  height: 210px;
   transform: rotate(-90deg);
 }
 
@@ -429,29 +436,30 @@ body.dark-mode #clock {
   fill: none;
   stroke-width: 15;
   stroke-linecap: round;
+  transition: stroke-dashoffset 1s;
 }
 
 .circle-value {
   position: absolute;
-  top: 60px;
-  left: 60px;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Open Sans', sans-serif;
-  font-size: 20px;
+  font-size: 35px;
   font-weight: 700;
   color: #fff;
 }
 
 .circle-label {
-  margin-top: 10px;
-  font-size: 14px;
+  margin-top: 18px;
+  font-size: 24px;
   font-family: 'Open Sans', sans-serif;
 }
 
 .circle-extra {
-  font-size: 12px;
+  font-size: 21px;
   font-family: 'Open Sans', sans-serif;
-  margin-top: 4px;
+  margin-top: 7px;
 }
 .ranking-title-blue {
   color: blue;
