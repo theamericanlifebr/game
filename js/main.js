@@ -177,6 +177,24 @@ const COMPLETION_THRESHOLD = 25000;
 const MODE6_THRESHOLD = 25115;
 const timeGoals = {1:1.8, 2:2.2, 3:2.2, 4:3.0, 5:3.5, 6:2.0};
 const MAX_TIME = 6.0;
+const timeScoreBases = {
+  2: {6: [2.55, 5.78], 33: [4.63, 8.03]},
+  3: {6: [2.55, 5.78], 33: [4.63, 8.03]},
+  4: {6: [2.03, 5.50], 33: [3.78, 7.06]},
+  5: {6: [3.09, 5.80], 33: [4.79, 8.03]},
+  6: {6: [2.36, 5.78], 33: [3.84, 8.03]}
+};
+
+function getTimeMetrics(len, mode) {
+  const base = timeScoreBases[mode];
+  if (!base) return { perfect: 0, worst: 0 };
+  const [p6, w6] = base[6];
+  const [p33, w33] = base[33];
+  const ratio = (len - 6) / (33 - 6);
+  const perfect = p6 + (p33 - p6) * ratio;
+  const worst = w6 + (w33 - w6) * ratio;
+  return { perfect, worst };
+}
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
 let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
 let modeIntroShown = JSON.parse(localStorage.getItem('modeIntroShown') || '{}');
@@ -221,6 +239,8 @@ const levelStar = document.getElementById('nivel-indicador');
 if (levelStar) levelStar.addEventListener('click', reportClickHandler);
 const modeLogo = document.getElementById('mode-icon');
 if (modeLogo) modeLogo.addEventListener('click', reportClickHandler);
+const phraseDisplay = document.getElementById('texto-exibicao');
+if (phraseDisplay) phraseDisplay.addEventListener('click', reportLastError);
 
 const modeImages = {
   1: 'selos%20modos%20de%20jogo/modo1.png',
@@ -252,6 +272,7 @@ function ensureModeStats(mode) {
     modeStats[mode] = {
       totalPhrases: 0,
       totalTime: 0,
+      timePoints: 0,
       correct: 0,
       wrong: 0,
       report: 0,
@@ -261,6 +282,7 @@ function ensureModeStats(mode) {
   } else {
     if (!Array.isArray(modeStats[mode].wrongRanking)) modeStats[mode].wrongRanking = [];
     if (!Array.isArray(modeStats[mode].reportRanking)) modeStats[mode].reportRanking = [];
+    if (typeof modeStats[mode].timePoints !== 'number') modeStats[mode].timePoints = 0;
   }
   return modeStats[mode];
 }
@@ -1262,9 +1284,19 @@ function verificarResposta() {
     ehQuaseCorreto(normalizadoResp, normalizadoEsp) ||
     ehQuaseCorretoPalavras(resposta, esperado);
 
+  const phraseLen = expectedPhrase.length;
+  let timePoints = 0;
+  if (selectedMode >= 2) {
+    const { perfect, worst } = getTimeMetrics(phraseLen, selectedMode);
+    const elapsedSec = elapsed / 1000;
+    timePoints = ((worst - elapsedSec) / (worst - perfect)) * 100;
+    if (timePoints < 0) timePoints = 0;
+  }
+
     if (correto) {
       stats.totalPhrases++;
       stats.correct++;
+      stats.timePoints += timePoints;
       saveModeStats();
       document.getElementById("somAcerto").play();
       acertosTotais++;
@@ -1284,6 +1316,7 @@ function verificarResposta() {
     } else {
       stats.totalPhrases++;
       stats.wrong++;
+      stats.timePoints += timePoints;
       const wr = stats.wrongRanking;
       const existing = wr.find(e => e.expected === expectedPhrase && e.input === resposta && e.folder === pastaAtual);
       if (existing) existing.count++;
