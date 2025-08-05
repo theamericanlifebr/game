@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Versus Match</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-mode">
+  <nav id="top-nav">
+    <a href="index.html">home</a>
+    <a href="#">fun</a>
+    <a href="play.html">play</a>
+    <a href="custom.html">custom</a>
+    <a href="versus.html">versus</a>
+  </nav>
+  <div id="versus-arena">
+    <div class="player-block" id="user-block">
+      <div class="player-name" id="user-name">the user</div>
+      <img class="player-avatar" id="user-avatar" src="users/theuser.png" alt="the user">
+      <div class="player-stats">
+        <div class="stat-bar"><div class="stat-fill" id="user-time-bar"></div></div>
+        <div class="stat-bar" style="margin-top:15px"><div class="stat-fill" id="user-acc-bar"></div></div>
+      </div>
+    </div>
+    <div id="center-area">
+      <div id="phrase"></div>
+      <input type="text" id="user-input" autocomplete="off" />
+    </div>
+    <div class="player-block" id="opponent-block">
+      <div class="player-name" id="opponent-name"></div>
+      <img class="player-avatar" id="opponent-avatar" alt="opponent">
+      <div class="player-stats">
+        <div class="stat-bar"><div class="stat-fill" id="bot-time-bar"></div></div>
+        <div class="stat-bar" style="margin-top:15px"><div class="stat-fill" id="bot-acc-bar"></div></div>
+      </div>
+    </div>
+  </div>
+  <div id="match-progress"><div id="match-progress-fill"></div></div>
+  <div id="match-timer"></div>
+  <script src="js/versusplay.js"></script>
+</body>
+</html>

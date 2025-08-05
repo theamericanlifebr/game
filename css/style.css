@@ -572,3 +572,90 @@ body.dark-mode #clock {
   opacity: 1;
 }
 
+
+#versus-arena {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  margin-top: 40px;
+}
+
+.player-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+}
+
+#user-block { margin-right: 100px; }
+#opponent-block { margin-left: 100px; }
+
+.player-name {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.player-avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.player-stats .stat-bar {
+  width: 200px;
+  height: 25px;
+  background: #ddd;
+  position: relative;
+}
+
+.stat-bar .stat-fill {
+  height: 100%;
+  width: 0%;
+  background: #ff0000;
+  transition: width 0.3s linear, background-color 0.3s linear, opacity 0.3s;
+}
+
+#center-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+}
+
+#phrase {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#user-input {
+  width: 300px;
+  height: 40px;
+  font-size: 18px;
+  text-align: center;
+}
+
+#match-progress {
+  width: 80%;
+  height: 20px;
+  background: #ddd;
+  margin: 40px auto 0 auto;
+}
+
+#match-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: #ff0000;
+  transition: width 1s linear, background-color 1s linear;
+}
+
+#match-timer {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 20px;
+  font-family: 'Open Sans', sans-serif;
+}
+
