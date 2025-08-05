@@ -86,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let progressTimer = null;
   let reconhecimento = null;
   let modoAtual = 0;
+  let versusLog = JSON.parse(localStorage.getItem('versusLog') || '[]');
+  let gameStart = 0;
+  let currentPair = '';
 
   const fraseEl = document.getElementById('versus-phrase');
   const userImg = document.querySelector('#player-user .player-img');
@@ -158,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fraseEl.style.color = '#fff';
     fraseEl.textContent = pt;
     esperado = en.toLowerCase();
+    currentPair = pt + '#' + en;
     if (modoAtual === 5) {
       const utter = new SpeechSynthesisUtterance(en);
       utter.lang = 'en-US';
@@ -213,16 +217,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function verificar(resp) {
-    const tempo = (Date.now() - inicioFrase) * 0.88;
+    const rawTime = Date.now() - inicioFrase;
+    const tempo = rawTime * 0.88;
     totalTempo += tempo;
     totalFrases++;
-    if (fraseCorreta(resp, esperado)) {
+    const ok = fraseCorreta(resp, esperado);
+    if (ok) {
       acertos++;
       flashColor('#40e0d0');
     } else {
       flashColor('red');
     }
     updateBars();
+    versusLog.push({
+      pair: currentPair,
+      input: resp,
+      correct: ok,
+      recogTime: rawTime,
+      gameTime: Date.now() - gameStart
+    });
+    localStorage.setItem('versusLog', JSON.stringify(versusLog));
     setTimeout(nextFrase, 1000);
   }
 
@@ -241,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userTimePerc = Math.max(0, 100 - avg * 20);
     const vary = v => v * (1 + (Math.random() * 0.25 - 0.15));
     botAccPerc = vary(botStats.precisao);
-    botTimePerc = vary(botStats.tempo);
+    botTimePerc = Math.min(userTimePerc + 15, 100);
     setBar(document.querySelector('#player-user .time .fill'), userTimePerc);
     setBar(document.querySelector('#player-user .acc .fill'), userAccPerc);
     setBar(document.querySelector('#player-bot .time .fill'), botTimePerc);
@@ -250,9 +264,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startProgress() {
     const filled = document.getElementById('barra-preenchida');
-    const start = Date.now();
+    gameStart = Date.now();
     progressTimer = setInterval(() => {
-      const ratio = Math.min((Date.now() - start) / 120000, 1);
+      const ratio = Math.min((Date.now() - gameStart) / 120000, 1);
       filled.style.width = (ratio * 100) + '%';
       filled.style.backgroundColor = calcularCor(ratio * 25000);
       if (ratio >= 1) clearInterval(progressTimer);
