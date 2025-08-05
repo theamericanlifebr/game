@@ -62,51 +62,54 @@ let reconhecimentoAtivo = false;
 let reconhecimentoRodando = false;
 let listeningForCommand = true;
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+let allowInput = true;
+let silenceTimer;
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  reconhecimento = new SpeechRecognition();
-  reconhecimento.lang = 'en-US';
-  reconhecimento.continuous = true;
-  reconhecimento.interimResults = false;
+  if (!isMobile) {
+    reconhecimento = new SpeechRecognition();
+    reconhecimento.lang = 'en-US';
+    reconhecimento.continuous = true;
+    reconhecimento.interimResults = false;
 
-  reconhecimento.onstart = () => {
-    reconhecimentoRodando = true;
-  };
+    reconhecimento.onstart = () => {
+      reconhecimentoRodando = true;
+    };
 
-  reconhecimento.onresult = (event) => {
-    const transcript = event.results[event.results.length - 1][0].transcript.trim();
-    const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (ilifeActive) {
-      if (normCmd.includes('play')) {
-        ilifeActive = false;
-        localStorage.setItem('ilifeDone', 'true');
-        const screen = document.getElementById('ilife-screen');
-        const menu = document.getElementById('menu');
-        if (screen) screen.style.display = 'none';
-        if (menu) menu.style.display = 'flex';
-        if (!tutorialDone) {
-          startTutorial();
+    reconhecimento.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.trim();
+      const normCmd = transcript.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (ilifeActive) {
+        if (normCmd.includes('play')) {
+          ilifeActive = false;
+          localStorage.setItem('ilifeDone', 'true');
+          const screen = document.getElementById('ilife-screen');
+          const menu = document.getElementById('menu');
+          if (screen) screen.style.display = 'none';
+          if (menu) menu.style.display = 'flex';
+          if (!tutorialDone) {
+            startTutorial();
+          }
         }
+        return;
       }
-      return;
-    }
-    if (awaitingNextLevel) {
-      if (normCmd.includes('level') || normCmd.includes('next') || normCmd.includes('game')) {
-        awaitingNextLevel = false;
-        if (nextLevelCallback) {
-          const cb = nextLevelCallback;
-          nextLevelCallback = null;
+      if (awaitingNextLevel) {
+        if (normCmd.includes('level') || normCmd.includes('next') || normCmd.includes('game')) {
+          awaitingNextLevel = false;
+          if (nextLevelCallback) {
+            const cb = nextLevelCallback;
+            nextLevelCallback = null;
+            cb();
+          }
+        }
+      } else if (awaitingRetry && (normCmd.includes('try again') || normCmd.includes('tentar de novo'))) {
+        awaitingRetry = false;
+        if (retryCallback) {
+          const cb = retryCallback;
+          retryCallback = null;
           cb();
         }
-      }
-      } else if (awaitingRetry && (normCmd.includes('try again') || normCmd.includes('tentar de novo'))) {
-      awaitingRetry = false;
-      if (retryCallback) {
-        const cb = retryCallback;
-        retryCallback = null;
-        cb();
-      }
       } else if (normCmd.includes('next level') || normCmd.includes('proximo nivel')) {
         points += 25000;
         saveTotals();
@@ -116,37 +119,72 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
           finishMode();
         }
       } else if (listeningForCommand) {
-      if (normCmd.includes('play')) {
-        listeningForCommand = false;
-        startGame(getHighestUnlockedMode());
-      }
-    } else {
-      if (normCmd.includes('pause') || normCmd.includes('pausa')) {
-        pauseGame();
-      } else if (
-        normCmd.includes('reportar') ||
-        normCmd.includes('report') ||
-        normCmd.includes('my star') ||
-        normCmd.includes('mystar') ||
-        normCmd.includes('estrela')
-      ) {
-        reportLastError();
+        if (normCmd.includes('play')) {
+          listeningForCommand = false;
+          startGame(getHighestUnlockedMode());
+        }
       } else {
-        document.getElementById("pt").value = transcript;
-        verificarResposta();
+        if (normCmd.includes('pause') || normCmd.includes('pausa')) {
+          pauseGame();
+        } else if (
+          normCmd.includes('reportar') ||
+          normCmd.includes('report') ||
+          normCmd.includes('my star') ||
+          normCmd.includes('mystar') ||
+          normCmd.includes('estrela')
+        ) {
+          reportLastError();
+        } else {
+          document.getElementById("pt").value = transcript;
+          verificarResposta();
+        }
       }
-    }
-  };
+    };
 
-  reconhecimento.onerror = (event) => {
-    console.error('Erro no reconhecimento de voz:', event.error);
-    if (event.error === 'not-allowed') alert('Permissão do microfone negada.');
-  };
+    reconhecimento.onerror = (event) => {
+      console.error('Erro no reconhecimento de voz:', event.error);
+      if (event.error === 'not-allowed') alert('Permissão do microfone negada.');
+    };
 
-  reconhecimento.onend = () => {
-    reconhecimentoRodando = false;
-    if (reconhecimentoAtivo) reconhecimento.start(); // reinicia se estiver ativo
-  };
+    reconhecimento.onend = () => {
+      reconhecimentoRodando = false;
+      if (reconhecimentoAtivo) reconhecimento.start();
+    };
+  } else {
+    reconhecimento = new SpeechRecognition();
+    reconhecimento.lang = 'en-US';
+    reconhecimento.continuous = true;
+    reconhecimento.interimResults = false;
+
+    const restartSilence = () => {
+      clearTimeout(silenceTimer);
+      silenceTimer = setTimeout(() => { window.location.href = 'index.html'; }, 6000);
+    };
+
+    reconhecimento.onstart = () => {
+      reconhecimentoRodando = true;
+      restartSilence();
+    };
+
+    reconhecimento.onsoundstart = restartSilence;
+
+    reconhecimento.onresult = (event) => {
+      restartSilence();
+      const transcript = event.results[event.results.length - 1][0].transcript.trim();
+      if (!allowInput) return;
+      document.getElementById('pt').value = transcript;
+      verificarResposta();
+    };
+
+    reconhecimento.onerror = (event) => {
+      console.error('Erro no reconhecimento de voz:', event.error);
+    };
+
+    reconhecimento.onend = () => {
+      reconhecimentoRodando = false;
+      if (reconhecimentoAtivo) reconhecimento.start();
+    };
+  }
 } else {
   alert('Reconhecimento de voz não é suportado neste navegador. Use o Chrome.');
 }
@@ -1086,6 +1124,8 @@ function falar(texto, lang) {
   const utter = new SpeechSynthesisUtterance(texto);
   utter.lang = lang === 'pt' ? 'pt-BR' : 'en-US';
   speechSynthesis.cancel();
+  allowInput = false;
+  utter.onend = () => { allowInput = true; };
   speechSynthesis.speak(utter);
 }
 
@@ -1195,8 +1235,10 @@ function mostrarFrase() {
   prizeTimer = setInterval(atualizarBarraProgresso, 50);
   atualizarBarraProgresso();
   if (isMobile && reconhecimento && !reconhecimentoAtivo) {
-    reconhecimentoAtivo = true;
-    reconhecimento.start();
+    setTimeout(() => {
+      reconhecimentoAtivo = true;
+      reconhecimento.start();
+    }, 500);
   }
   if (selectedMode >= 2) {
     inputTimeout = setTimeout(handleNoInput, 6000);
