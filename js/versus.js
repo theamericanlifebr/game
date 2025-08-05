@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
       img.alt = `Modo ${i}`;
       img.dataset.mode = i;
       img.addEventListener('click', () => {
-        window.location.href = `play.html?mode=${i}&bot=${bot.name}`;
+        window.location.href = `versusplay.html?mode=${i}&bot=${bot.name}`;
       });
       modeList.appendChild(img);
     }
