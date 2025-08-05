@@ -99,36 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
   let botAccPerc = 0;
   let progressTimer = null;
   let updateTimer = null;
-  let reconhecimento = null;
-  let modoAtual = 0;
 
+  const input = document.getElementById('versus-input');
   const fraseEl = document.getElementById('versus-phrase');
   const userImg = document.querySelector('#player-user .player-img');
   const botImg = document.getElementById('bot-avatar');
 
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    reconhecimento = new SpeechRecognition();
-    reconhecimento.lang = 'en-US';
-    reconhecimento.continuous = true;
-    reconhecimento.interimResults = false;
-    reconhecimento.onresult = (e) => {
-      const transcript = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
-      verificar(transcript);
-    };
-    reconhecimento.onerror = (e) => console.error('Erro no reconhecimento de voz:', e.error);
-    reconhecimento.onend = () => {
-      if (modoAtual) try { reconhecimento.start(); } catch (err) {}
-    };
-  } else {
-    alert('Reconhecimento de voz não suportado.');
-  }
+  input.addEventListener('keypress', e => {
+    if (e.key === 'Enter') verificar();
+  });
 
   function showModes(bot) {
     document.getElementById('bot-list').style.display = 'none';
     const modeList = document.getElementById('mode-list');
     modeList.innerHTML = '';
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 2; i <= 6; i++) {
       const img = document.createElement('img');
       img.src = `selos%20modos%20de%20jogo/modo${i}.png`;
       img.alt = `Modo ${i}`;
@@ -141,13 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function startVersus(bot, modo) {
     botAtual = bot;
-    modoAtual = modo;
     document.getElementById('mode-list').style.display = 'none';
     const game = document.getElementById('versus-game');
     document.getElementById('bot-name').textContent = bot.name;
     botImg.src = `users/${bot.file}`;
     game.style.display = 'block';
-    frases = Object.values(await carregarPastas()).flat().filter(([, en]) => en.length <= 15);
+    frases = Object.values(await carregarPastas()).flat();
     frases = embaralhar(frases);
     botStats = bot.modes[String(modo)] || { precisao: 0, tempo: 0 };
     nextFrase();
@@ -155,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBars();
     updateTimer = setInterval(updateBars, 10000);
     setTimeout(encerrar, 120000);
-    if (reconhecimento) try { reconhecimento.start(); } catch (err) {}
   }
 
   function embaralhar(arr) {
@@ -169,22 +152,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function nextFrase() {
     if (fraseIndex >= frases.length) fraseIndex = 0;
     const [pt, en] = frases[fraseIndex];
-    if (modoAtual === 1) {
-      fraseEl.textContent = en;
-      esperado = en.toLowerCase();
-    } else {
-      fraseEl.textContent = pt;
-      esperado = en.toLowerCase();
-    }
+    fraseEl.textContent = pt;
+    esperado = en.toLowerCase();
     inicioFrase = Date.now();
     fraseIndex++;
   }
 
-  function verificar(resp) {
+  function verificar() {
+    const resp = input.value.trim().toLowerCase();
     const tempo = Date.now() - inicioFrase;
     totalTempo += tempo;
     totalFrases++;
     if (resp === esperado) acertos++;
+    input.value = '';
     nextFrase();
   }
 
@@ -225,8 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearInterval(updateTimer);
     fraseEl.style.transition = 'opacity 0.5s';
     fraseEl.style.opacity = 0;
-    modoAtual = 0;
-    if (reconhecimento) try { reconhecimento.stop(); } catch (err) {}
+    input.style.display = 'none';
     const userScore = (userAccPerc + userTimePerc) / 2;
     const botScore = (botAccPerc + botTimePerc) / 2;
     if (userScore > botScore) {
