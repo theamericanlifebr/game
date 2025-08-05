@@ -133,6 +133,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const game = document.getElementById('versus-game');
     document.getElementById('bot-name').textContent = bot.name;
     botImg.src = `users/${bot.file}`;
+    const imgs = document.querySelectorAll('.player-img');
+    const bars = document.querySelectorAll('.stat-bar');
+    if (modo === 2) {
+      imgs.forEach(img => {
+        img.style.width = '120px';
+        img.style.height = '120px';
+      });
+      bars.forEach(bar => bar.style.width = '120px');
+    } else {
+      imgs.forEach(img => {
+        img.style.width = '150px';
+        img.style.height = '150px';
+      });
+      bars.forEach(bar => bar.style.width = '200px');
+    }
     game.style.display = 'block';
     frases = embaralhar(await carregarPastas());
     botStats = bot.modes[String(modo)] || { precisao: 0, tempo: 0 };
@@ -217,7 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function verificar(resp) {
     const recTime = Date.now() - inicioFrase;
-    const tempo = recTime * 0.88;
+    let adjTime = recTime;
+    const charCount = esperado.replace(/\s+/g, '').length;
+    if (charCount > 6) {
+      const discount = (charCount - 6) * 131;
+      adjTime = Math.max(0, adjTime - discount);
+    }
+    const tempo = adjTime * 0.88 * 0.93;
     totalTempo += tempo;
     totalFrases++;
     const correto = fraseCorreta(resp, esperado);
@@ -253,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userAccPerc = totalFrases ? (acertos / totalFrases * 100) : 0;
     const avg = totalFrases ? (totalTempo / totalFrases / 1000) : 0;
     userTimePerc = Math.max(0, 100 - avg * 20);
-    userTimePerc = Math.min(userTimePerc + 15, 100);
+    userTimePerc = Math.min(userTimePerc * 1.07 + 15, 100);
     const vary = v => v * (1 + (Math.random() * 0.25 - 0.15));
     botAccPerc = vary(botStats.precisao);
     botTimePerc = vary(botStats.tempo);
