@@ -531,3 +531,31 @@ body.dark-mode #clock {
   color: lime;
 }
 
+#bot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  padding: 40px;
+}
+
+.bot-item {
+  text-align: center;
+  cursor: pointer;
+}
+
+.bot-item img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+#mode-list {
+  display: none;
+  grid-template-columns: repeat(3, 227px);
+  grid-auto-rows: 227px;
+  gap: 50px;
+  justify-content: center;
+  padding: 40px;
+}
+
