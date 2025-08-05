@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userAccPerc = totalFrases ? (acertos / totalFrases * 100) : 0;
     const avg = totalFrases ? (totalTempo / totalFrases / 1000) : 0;
     userTimePerc = Math.max(0, 100 - avg * 20);
-    const vary = v => v * (1 + (Math.random() * 0.14 - 0.07));
+    const vary = v => v * (1 + (Math.random() * 0.30 - 0.15));
     botAccPerc = vary(botStats.precisao);
     botTimePerc = vary(botStats.tempo);
     setBar(document.querySelector('#player-user .time .fill'), userTimePerc);
