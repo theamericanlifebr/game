@@ -190,7 +190,8 @@ function getTimeMetrics(len, mode) {
   if (!base) return { perfect: 0, worst: 0 };
   const [p6, w6] = base[6];
   const [p33, w33] = base[33];
-  const ratio = (len - 6) / (33 - 6);
+  const clampedLen = Math.max(1, len);
+  const ratio = (clampedLen - 6) / (33 - 6);
   const perfect = p6 + (p33 - p6) * ratio;
   const worst = w6 + (w33 - w6) * ratio;
   return { perfect, worst };
@@ -1284,7 +1285,7 @@ function verificarResposta() {
     ehQuaseCorreto(normalizadoResp, normalizadoEsp) ||
     ehQuaseCorretoPalavras(resposta, esperado);
 
-  const phraseLen = expectedPhrase.length;
+  const phraseLen = expectedPhrase.replace(/\s+/g, '').length;
   let timePoints = 0;
   if (selectedMode >= 2) {
     const { perfect, worst } = getTimeMetrics(phraseLen, selectedMode);
