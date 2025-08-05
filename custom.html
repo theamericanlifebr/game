@@ -42,6 +42,24 @@
     }
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('custom-content');
+      const versusLog = JSON.parse(localStorage.getItem('versusLog') || '[]');
+      if (versusLog.length) {
+        const vTitle = document.createElement('h1');
+        vTitle.className = 'custom-title';
+        vTitle.textContent = 'Versus - Resultados';
+        container.appendChild(vTitle);
+        const table = document.createElement('table');
+        table.className = 'ranking-table';
+        const header = document.createElement('tr');
+        header.innerHTML = '<th>Frase</th><th>Entrada</th><th>Resultado</th><th>Tempo Reconhecimento</th><th>Tempo Jogo</th>';
+        table.appendChild(header);
+        versusLog.forEach(v => {
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${v.phrase}</td><td>${v.input}</td><td>${v.result}</td><td>${v.recTime}</td><td>${v.gameTime}</td>`;
+          table.appendChild(row);
+        });
+        container.appendChild(table);
+      }
       const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
       for (let i = 1; i <= 6; i++) {
         const stats = statsData[i] || {};
