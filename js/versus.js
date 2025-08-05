@@ -158,11 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
     fraseEl.style.color = '#fff';
     fraseEl.textContent = pt;
     esperado = en.toLowerCase();
-    setTimeout(() => {
-      fraseEl.style.transition = 'opacity 500ms, font-size 1000ms';
-      fraseEl.style.opacity = 1;
-      fraseEl.style.fontSize = '45px';
-    }, 50);
+    if (modoAtual === 5) {
+      const utter = new SpeechSynthesisUtterance(en);
+      utter.lang = 'en-US';
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    } else {
+      setTimeout(() => {
+        fraseEl.style.transition = 'opacity 500ms, font-size 1000ms';
+        fraseEl.style.opacity = 1;
+        fraseEl.style.fontSize = '45px';
+      }, 50);
+    }
     inicioFrase = Date.now();
     fraseIndex++;
   }
@@ -175,11 +182,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
   }
 
+  function levenshtein(a, b) {
+    const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+        else dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      }
+    }
+    return dp[a.length][b.length];
+  }
+
+  function fraseCorreta(resp, esperado) {
+    const respWords = resp.trim().split(/\s+/);
+    const expWords = esperado.trim().split(/\s+/);
+    if (respWords.length < expWords.length) return false;
+    for (let start = 0; start <= respWords.length - expWords.length; start++) {
+      let ok = true;
+      for (let i = 0; i < expWords.length; i++) {
+        if (levenshtein(respWords[start + i], expWords[i]) > 1) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) return true;
+    }
+    return false;
+  }
+
   function verificar(resp) {
-    const tempo = Date.now() - inicioFrase;
+    const tempo = (Date.now() - inicioFrase) * 0.88;
     totalTempo += tempo;
     totalFrases++;
-    if (resp === esperado) {
+    if (fraseCorreta(resp, esperado)) {
       acertos++;
       flashColor('#40e0d0');
     } else {
