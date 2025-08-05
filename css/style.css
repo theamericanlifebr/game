@@ -629,7 +629,7 @@ body.dark-mode #clock {
 
 #versus-game #barra-progresso {
   width: 500px;
-  margin: 20px auto 0;
+  margin: 60px auto 0;
 }
 
 @media (max-width: 600px) {
@@ -639,11 +639,5 @@ body.dark-mode #clock {
   #versus-game #barra-progresso {
     width: 90%;
   }
-}
-
-#versus-input {
-  margin-top: 20px;
-  padding: 10px;
-  font-size: 18px;
 }
 
