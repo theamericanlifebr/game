@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let progressTimer = null;
   let reconhecimento = null;
   let modoAtual = 0;
+  let gameStart = 0;
+  let versusLog = JSON.parse(localStorage.getItem('versusLog') || '[]');
 
   const fraseEl = document.getElementById('versus-phrase');
   const userImg = document.querySelector('#player-user .player-img');
@@ -134,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     game.style.display = 'block';
     frases = embaralhar(await carregarPastas());
     botStats = bot.modes[String(modo)] || { precisao: 0, tempo: 0 };
+    gameStart = Date.now();
     nextFrase();
     startProgress();
     updateBars();
@@ -213,15 +216,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function verificar(resp) {
-    const tempo = (Date.now() - inicioFrase) * 0.88;
+    const recTime = Date.now() - inicioFrase;
+    const tempo = recTime * 0.88;
     totalTempo += tempo;
     totalFrases++;
-    if (fraseCorreta(resp, esperado)) {
+    const correto = fraseCorreta(resp, esperado);
+    if (correto) {
       acertos++;
       flashColor('#40e0d0');
     } else {
       flashColor('red');
     }
+    const atual = frases[fraseIndex - 1];
+    versusLog.push({
+      phrase: `${atual[0]}#${atual[1]}`,
+      input: resp,
+      result: correto ? 'certo' : 'errado',
+      recTime,
+      gameTime: Date.now() - gameStart
+    });
+    localStorage.setItem('versusLog', JSON.stringify(versusLog));
     updateBars();
     setTimeout(nextFrase, 1000);
   }
@@ -239,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userAccPerc = totalFrases ? (acertos / totalFrases * 100) : 0;
     const avg = totalFrases ? (totalTempo / totalFrases / 1000) : 0;
     userTimePerc = Math.max(0, 100 - avg * 20);
+    userTimePerc = Math.min(userTimePerc + 15, 100);
     const vary = v => v * (1 + (Math.random() * 0.25 - 0.15));
     botAccPerc = vary(botStats.precisao);
     botTimePerc = vary(botStats.tempo);
