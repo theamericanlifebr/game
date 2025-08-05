@@ -2,11 +2,16 @@ body {
   margin: 0;
   background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%);
   font-family: 'Open Sans', sans-serif;
+  --grad-color: #40e0d0;
 }
 
 body.dark-mode {
   background: #000;
   color: #fff;
+}
+
+body.gradient-mode {
+  background: linear-gradient(to top, var(--grad-color, #40e0d0) 0%, #000 100%);
 }
 
 body.custom-gradient {

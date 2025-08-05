@@ -175,8 +175,6 @@ let selectedMode = 1;
 const INITIAL_POINTS = 3500;
 const COMPLETION_THRESHOLD = 25000;
 const MODE6_THRESHOLD = 25115;
-const timeGoals = {1:1.8, 2:2.2, 3:2.2, 4:3.0, 5:3.5, 6:2.0};
-const MAX_TIME = 6.0;
 const timeScoreBases = {
   2: {6: [2.55, 5.78], 33: [4.63, 8.03]},
   3: {6: [2.55, 5.78], 33: [4.63, 8.03]},
@@ -232,6 +230,37 @@ let consecutiveErrors = 0;
 let pauseInterval = null;
 let downPlaying = false;
 let downTimeout = null;
+
+const colorModes = ['light', 'dark', 'gradient'];
+let colorModeIndex = parseInt(localStorage.getItem('colorMode') || '0', 10);
+
+function updateGradientColor(color) {
+  if (document.body.classList.contains('gradient-mode')) {
+    document.body.style.setProperty('--grad-color', color);
+  }
+}
+
+function applyColorMode() {
+  document.body.classList.remove('dark-mode', 'gradient-mode');
+  const mode = colorModes[colorModeIndex];
+  if (mode === 'dark') {
+    document.body.classList.add('dark-mode');
+    document.body.style.removeProperty('--grad-color');
+  } else if (mode === 'gradient') {
+    document.body.classList.add('dark-mode', 'gradient-mode');
+    updateGradientColor(calcularCor(points));
+  } else {
+    document.body.style.removeProperty('--grad-color');
+  }
+  localStorage.setItem('colorMode', colorModeIndex);
+}
+
+function toggleDarkMode() {
+  colorModeIndex = (colorModeIndex + 1) % colorModes.length;
+  applyColorMode();
+}
+
+applyColorMode();
 
 const reportClickHandler = () => {
   if (downPlaying) handleReportClick();
@@ -700,12 +729,10 @@ function calcModeStats(mode) {
   const correct = stats.correct || 0;
   const report = stats.report || 0;
   const totalTime = stats.totalTime || 0;
+  const timePts = stats.timePoints || 0;
   const accPerc = total ? (correct / total * 100) : 0;
   const avg = total ? (totalTime / total / 1000) : 0;
-  const goal = timeGoals[mode] || MAX_TIME;
-  let timePerc = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
-  if (avg >= MAX_TIME) timePerc = 0;
-  if ([2, 3, 6].includes(mode) && total) timePerc += 20;
+  const timePerc = total ? (timePts / total) : 0;
   const notReportPerc = total ? (100 - (report / total * 100)) : 100;
   return { accPerc, timePerc, avg, notReportPerc };
 }
@@ -1092,10 +1119,6 @@ function showShortModeIntro(modo, callback) {
   }, 3000);
 }
 
-function toggleDarkMode() {
-  document.body.classList.toggle('dark-mode');
-}
-
 function falarFrase() {
   if (frasesArr[fraseIndex]) {
     const [, en] = frasesArr[fraseIndex];
@@ -1368,7 +1391,9 @@ function atualizarBarraProgresso() {
   const limite = selectedMode === 6 ? MODE6_THRESHOLD : COMPLETION_THRESHOLD;
   const perc = Math.max(0, Math.min(points, limite)) / limite * 100;
   filled.style.width = perc + '%';
-  filled.style.backgroundColor = calcularCor(points);
+  const barColor = calcularCor(points);
+  filled.style.backgroundColor = barColor;
+  updateGradientColor(barColor);
   const icon = document.getElementById('mode-icon');
   if (icon) {
     icon.style.opacity = perc / 100;
@@ -1397,15 +1422,10 @@ function finishMode() {
     const stats6 = ensureModeStats(6);
     const total = stats6.totalPhrases || 0;
     const acc = total ? (stats6.correct / total * 100).toFixed(2) : '0';
-    const avg = total ? (stats6.totalTime / total / 1000) : 0;
-    const MAX_TIME = 6.0;
-    const goal = 2.0;
-    let speed = total ? ((MAX_TIME - avg) / (MAX_TIME - goal) * 100) : 0;
-    if (avg >= MAX_TIME) speed = 0;
-    if (total) speed += 20;
+    const avgPts = total ? (stats6.timePoints / total) : 0;
     const reportPerc = total ? (stats6.report / total * 100).toFixed(2) : '0';
     const details = JSON.parse(localStorage.getItem('levelDetails') || '[]');
-    details.push({ level: pastaAtual + 1, accuracy: acc, speed: speed.toFixed(2), reports: reportPerc });
+    details.push({ level: pastaAtual + 1, accuracy: acc, speed: avgPts.toFixed(2), reports: reportPerc });
     localStorage.setItem('levelDetails', JSON.stringify(details));
     document.querySelectorAll('#menu-modes img[data-mode="6"], #mode-buttons img[data-mode="6"]').forEach(img => {
       img.src = 'selos%20modos%20de%20jogo/modostar.png';
