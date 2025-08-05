@@ -572,3 +572,61 @@ body.dark-mode #clock {
   opacity: 1;
 }
 
+#versus-game {
+  display: none;
+  text-align: center;
+  margin-top: 40px;
+}
+
+#players {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 100px;
+  margin-bottom: 30px;
+}
+
+.player-name {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.player-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.stat-bar {
+  width: 200px;
+  height: 25px;
+  background: #333;
+  margin: 15px auto 0;
+  border-radius: 0;
+}
+
+.stat-bar + .stat-bar {
+  margin-top: 15px;
+}
+
+.stat-bar .fill {
+  height: 100%;
+  width: 0;
+  background: #ff0000;
+  opacity: 1;
+  transition: width 0.5s linear, background-color 0.5s linear, opacity 0.3s;
+}
+
+#versus-phrase {
+  margin-top: 40px;
+  font-size: 24px;
+  min-height: 40px;
+}
+
+#versus-input {
+  margin-top: 20px;
+  padding: 10px;
+  font-size: 18px;
+}
+
