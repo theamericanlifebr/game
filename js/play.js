@@ -103,6 +103,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const buttons = document.querySelectorAll('#mode-buttons img');
   const clickSound = new Audio('gamesounds/mododesbloqueado.mp3');
   const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
+
+  const params = new URLSearchParams(window.location.search);
+  const botName = params.get('bot');
+  const botMode = parseInt(params.get('mode'), 10);
+
+  if (botName) {
+    document.getElementById('mode-buttons').style.display = 'none';
+    container.style.display = 'none';
+    startVersus(botName, botMode);
+    return;
+  }
   function calcModeStats(mode) {
     const stats = statsData[mode] || {};
     const total = stats.totalPhrases || 0;
@@ -138,6 +149,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const timePerc = timePercCount ? (timePercSum / timePercCount) : 0;
     const notReportPerc = totalPhrases ? (100 - (totalReport / totalPhrases * 100)) : 100;
     return { accPerc, timePerc, avg, notReportPerc };
+  }
+
+  function startVersus(name, mode) {
+    fetch('users/bots.json')
+      .then(r => r.json())
+      .then(data => {
+        const bot = data.bots.find(b => b.name === name);
+        if (!bot) return;
+        const base = bot.modes[String(mode)] || { precisao: 0, tempo: 0 };
+        const vs = document.getElementById('versus-stats');
+        const title = document.getElementById('vs-title');
+        const roundEl = document.getElementById('round');
+        const userAcc = document.getElementById('user-acc');
+        const userTime = document.getElementById('user-time');
+        const botAcc = document.getElementById('bot-acc');
+        const botTime = document.getElementById('bot-time');
+        vs.style.display = 'block';
+        title.textContent = `${bot.name} - Modo ${mode}`;
+        let round = 1;
+        const totalRounds = 5;
+        function nextRound() {
+          roundEl.textContent = `Frase ${round}`;
+          userAcc.textContent = 'Você precisão: 0%';
+          userTime.textContent = 'Você tempo: 0s';
+          botAcc.textContent = 'Bot precisão: 0%';
+          botTime.textContent = 'Bot tempo: 0s';
+          setTimeout(() => {
+            const vary = v => v * (1 + (Math.random() * 0.14 - 0.07));
+            const bAcc = vary(base.precisao);
+            const bTime = vary(base.tempo);
+            botAcc.textContent = `Bot precisão: ${bAcc.toFixed(1)}%`;
+            botTime.textContent = `Bot tempo: ${bTime.toFixed(1)}s`;
+            const uAcc = vary(base.precisao);
+            const uTime = vary(base.tempo);
+            userAcc.textContent = `Você precisão: ${uAcc.toFixed(1)}%`;
+            userTime.textContent = `Você tempo: ${uTime.toFixed(1)}s`;
+            round++;
+            if (round <= totalRounds) {
+              setTimeout(nextRound, 1000);
+            }
+          }, 1000);
+        }
+        nextRound();
+      });
   }
 
   function render(mode) {
