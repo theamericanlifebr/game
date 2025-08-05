@@ -6,39 +6,58 @@ const pastas = {
   
   
 
-Eu sou#I am
-Você é#You are
-Ele é#He is
-Ela é#She is
-Eu sou legal#I am nice
-ela é forte#She is strong  
-nós estamos prontos#We are ready  
-isso é bonito#It is beautiful  
-Eu vejo#Isee
-eu quero isso#I want this  
-Você é feliz#You are happy  
-Ela tem um gato#She has a cat  
-Você gosta disso#He likes this  
-Eu gosto de pizza#I like pizza  
-Bom dia#Good morning  
-Boa tarde#Good afternoon  
-Boa noite#Good night  
-Eu estou bem#I am fine  
-Eu estou pronto#I am ready  
-Eu vejo a casa#I see the house
-Eu sou forte#I am strong  
-Ela é feliz#She is happy  
-Ele é legal#He is nice  
-Eu sou feliz#I am happy  
-Ela é bonita#She is beautiful  
-Você é legal#You are nice  
-Nós somos fortes#We are strong  
-Nós temos um plano#We have a plan  
-Você tem um cachorro#You have a dog  
-Isso é fácil#This is easy  
-Iikiksso é difícil#That is hard  
-Eu gosto disso#I like this  
-Nós amamos música#We love music  
+
+Eu te amo#I love you
+Ela saiu#She left
+Está frio#It’s cold
+Me ajuda#Help me
+Vamos lá#Let’s go
+Está bem#It’s fine
+Eu sei#I know
+Ele me viu#He saw me
+Ele viu#He saw
+Ela corre#She runs
+Eu vou#I’ll go
+Me ligue#Call me
+Tudo bem#All good
+Está ok#It’s ok
+Vem cá#Come here
+Saia já#Get out
+Você pode#You can
+Isso dói#It hurts
+Fique aqui#Stay here
+Está aqui#It’s here
+Ele caiu#He fell
+Eu quero#I want
+Me diga#Tell me
+Ele foi#He went
+Vem agora#Come now
+Volte já#Come back
+Bom trabalho#Good job
+Fique calmo#Stay calm
+Pare agora#Stop now
+Vem cá#Come here
+Ajuda aqui#Help here
+Tudo certo#All right
+Sem problemas#No problem
+Me ouça#Hear me
+Você pode#You can
+Vamos juntos#Go together
+Volte já#Come back
+Corra rápido#Run fast
+Durma bem#Sleep well
+Cuidado aí#Watch out
+Olhe isso#Look here
+Pegue isso#Take this
+Espere aí#Wait there
+Escute bem#Listen carefully
+Fique aqui#Stay here
+Fale alto#Speak loud
+Abra isso#Open this
+Feche isso#Close that
+Vire aqui#Turn here
+Entre agora#Enter now
+Sente-se#Sit down
 
 
   
@@ -6457,6 +6476,7 @@ Quase nenhum deles voltou#Scarcely any of them came back
 
 
 }
+
 
 
 
