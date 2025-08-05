@@ -61,6 +61,7 @@ let reconhecimento;
 let reconhecimentoAtivo = false;
 let reconhecimentoRodando = false;
 let listeningForCommand = true;
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1059,8 +1060,12 @@ function beginGame() {
       } else {
         reconhecimento.lang = esperadoLang === 'pt' ? 'pt-BR' : 'en-US';
       }
-      reconhecimentoAtivo = true;
-      reconhecimento.start();
+      if (isMobile) {
+        reconhecimentoAtivo = false;
+      } else {
+        reconhecimentoAtivo = true;
+        reconhecimento.start();
+      }
     }
     if (selectedMode === 1) {
       premioBase = 1000;
@@ -1189,6 +1194,10 @@ function mostrarFrase() {
   prizeStart = Date.now();
   prizeTimer = setInterval(atualizarBarraProgresso, 50);
   atualizarBarraProgresso();
+  if (isMobile && reconhecimento && !reconhecimentoAtivo) {
+    reconhecimentoAtivo = true;
+    reconhecimento.start();
+  }
   if (selectedMode >= 2) {
     inputTimeout = setTimeout(handleNoInput, 6000);
   }
@@ -1589,16 +1598,15 @@ async function initGame() {
     points = INITIAL_POINTS;
     saveTotals();
     atualizarBarraProgresso();
-    if (!tutorialDone) {
+    if (!tutorialDone && !isMobile) {
       startTutorial();
-    } else {
-      const logoTop = document.getElementById('logo-top');
-      const levelIcon = document.getElementById('nivel-indicador');
-      const menuLogo = document.getElementById('menu-logo');
-      if (logoTop) logoTop.style.display = 'block';
-      if (levelIcon) levelIcon.style.display = 'block';
-      if (menuLogo) menuLogo.style.display = 'block';
     }
+    const logoTop = document.getElementById('logo-top');
+    const levelIcon = document.getElementById('nivel-indicador');
+    const menuLogo = document.getElementById('menu-logo');
+    if (logoTop) logoTop.style.display = 'block';
+    if (levelIcon) levelIcon.style.display = 'block';
+    if (menuLogo) menuLogo.style.display = 'block';
   }
 
   document.querySelectorAll('#mode-buttons img, #menu-modes img').forEach(img => {
@@ -1669,6 +1677,27 @@ async function initGame() {
       });
     }
     await initGame();
+    if (isMobile) {
+      const tapLogo = document.getElementById('ilife-logo');
+      if (tapLogo) {
+        let tapCount = 0;
+        let tapTimer;
+        tapLogo.addEventListener('touchstart', () => {
+          tapCount++;
+          clearTimeout(tapTimer);
+          tapTimer = setTimeout(() => { tapCount = 0; }, 500);
+          if (tapCount === 3) {
+            const screen = document.getElementById('ilife-screen');
+            const menu = document.getElementById('menu');
+            if (screen) screen.style.display = 'none';
+            if (menu) menu.style.display = 'flex';
+            ilifeActive = false;
+            localStorage.setItem('ilifeDone', 'true');
+            startTutorial();
+          }
+        });
+      }
+    }
     window.addEventListener('beforeunload', () => {
       recordModeTime(selectedMode);
       saveModeStats();
