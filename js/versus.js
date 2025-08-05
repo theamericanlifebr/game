@@ -50,24 +50,10 @@ function colorFromPercent(perc) {
   return calcularCor((perc / 100) * max);
 }
 
-function parsePastas(raw) {
-  const result = {};
-  for (const [key, texto] of Object.entries(raw)) {
-    result[key] = texto.trim().split(/\n+/).filter(Boolean).map(l => l.split('#').map(s => s.trim()));
-  }
-  return result;
-}
-
 async function carregarPastas() {
-  const resp = await fetch('data/pastas.json');
-  const text = await resp.text();
-  const obj = {};
-  const regex = /(\d+):\s*`([\s\S]*?)`/g;
-  let m;
-  while ((m = regex.exec(text))) {
-    obj[m[1]] = m[2];
-  }
-  return parsePastas(obj);
+  const resp = await fetch('data/pastasversus.json');
+  const data = await resp.json();
+  return data.frases.map(l => l.split('#').map(s => s.trim()));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -98,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let botTimePerc = 0;
   let botAccPerc = 0;
   let progressTimer = null;
-  let updateTimer = null;
   let reconhecimento = null;
   let modoAtual = 0;
 
@@ -147,13 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bot-name').textContent = bot.name;
     botImg.src = `users/${bot.file}`;
     game.style.display = 'block';
-    frases = Object.values(await carregarPastas()).flat().filter(([, en]) => en.length <= 15);
-    frases = embaralhar(frases);
+    frases = embaralhar(await carregarPastas());
     botStats = bot.modes[String(modo)] || { precisao: 0, tempo: 0 };
     nextFrase();
     startProgress();
     updateBars();
-    updateTimer = setInterval(updateBars, 10000);
     setTimeout(encerrar, 120000);
     if (reconhecimento) try { reconhecimento.start(); } catch (err) {}
   }
@@ -169,23 +152,41 @@ document.addEventListener('DOMContentLoaded', () => {
   function nextFrase() {
     if (fraseIndex >= frases.length) fraseIndex = 0;
     const [pt, en] = frases[fraseIndex];
-    if (modoAtual === 1) {
-      fraseEl.textContent = en;
-      esperado = en.toLowerCase();
-    } else {
-      fraseEl.textContent = pt;
-      esperado = en.toLowerCase();
-    }
+    fraseEl.style.transition = 'none';
+    fraseEl.style.opacity = 0;
+    fraseEl.style.fontSize = '40px';
+    fraseEl.style.color = '#fff';
+    fraseEl.textContent = pt;
+    esperado = en.toLowerCase();
+    setTimeout(() => {
+      fraseEl.style.transition = 'opacity 500ms, font-size 1000ms';
+      fraseEl.style.opacity = 1;
+      fraseEl.style.fontSize = '45px';
+    }, 50);
     inicioFrase = Date.now();
     fraseIndex++;
+  }
+
+  function flashColor(cor) {
+    fraseEl.style.transition = 'color 500ms';
+    fraseEl.style.color = cor;
+    setTimeout(() => {
+      fraseEl.style.color = '#fff';
+    }, 500);
   }
 
   function verificar(resp) {
     const tempo = Date.now() - inicioFrase;
     totalTempo += tempo;
     totalFrases++;
-    if (resp === esperado) acertos++;
-    nextFrase();
+    if (resp === esperado) {
+      acertos++;
+      flashColor('#40e0d0');
+    } else {
+      flashColor('red');
+    }
+    updateBars();
+    setTimeout(nextFrase, 1000);
   }
 
   function setBar(fill, perc) {
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userAccPerc = totalFrases ? (acertos / totalFrases * 100) : 0;
     const avg = totalFrases ? (totalTempo / totalFrases / 1000) : 0;
     userTimePerc = Math.max(0, 100 - avg * 20);
-    const vary = v => v * (1 + (Math.random() * 0.30 - 0.15));
+    const vary = v => v * (1 + (Math.random() * 0.25 - 0.15));
     botAccPerc = vary(botStats.precisao);
     botTimePerc = vary(botStats.tempo);
     setBar(document.querySelector('#player-user .time .fill'), userTimePerc);
@@ -222,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function encerrar() {
-    clearInterval(updateTimer);
     fraseEl.style.transition = 'opacity 0.5s';
     fraseEl.style.opacity = 0;
     modoAtual = 0;
