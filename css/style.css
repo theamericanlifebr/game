@@ -9,6 +9,11 @@ body.dark-mode {
   color: #fff;
 }
 
+body.custom-gradient {
+  background: linear-gradient(to bottom, #e0e0e0 0%, #ffffff 100%);
+  color: #333;
+}
+
 body.dark-mode #pt,
 body.dark-mode #texto-exibicao,
 body.dark-mode #resultado,

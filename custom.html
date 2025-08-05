@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="dark-mode">
+<body class="custom-gradient">
   <nav id="top-nav">
     <a href="index.html">home</a>
     <a href="#">fun</a>
@@ -51,6 +51,8 @@
         const report = stats.report || 0;
         const acc = total ? ((correct / total) * 100).toFixed(2) : '0';
         const avg = total ? formatTime(totalTime / total) : '0s';
+        const timePts = stats.timePoints || 0;
+        const avgPts = total ? (timePts / total).toFixed(2) : '0';
         const reportPerc = total ? ((report / total) * 100).toFixed(2) : '0';
         const section = document.createElement('div');
         section.innerHTML = `
@@ -61,6 +63,7 @@
           <div class="custom-info">Frases erradas: ${wrong}</div>
           <div class="custom-info">Porcentagem de acertos: ${acc}%</div>
           <div class="custom-info">Média de tempo por frase: ${avg}</div>
+          <div class="custom-info">Pontos de tempo: ${avgPts}</div>
           <div class="custom-info">Uso de reportar: ${reportPerc}%</div>
         `;
         const red = stats.wrongRanking || [];
