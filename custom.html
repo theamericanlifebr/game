@@ -95,6 +95,26 @@
         }
         container.appendChild(section);
       }
+      const versusSection = document.createElement('div');
+      versusSection.innerHTML = '<h1 class="custom-title">Versus</h1>';
+      const vLog = JSON.parse(localStorage.getItem('versusLog') || '[]');
+      if (vLog.length) {
+        const table = document.createElement('table');
+        table.className = 'ranking-table';
+        const header = document.createElement('tr');
+        header.innerHTML = '<th>Frase</th><th>Entrada</th><th>Resultado</th><th>Reconhecimento</th><th>Tempo de jogo</th>';
+        table.appendChild(header);
+        vLog.forEach(item => {
+          const row = document.createElement('tr');
+          const status = item.correct ? 'certo' : 'errado';
+          const rec = (item.recogTime / 1000).toFixed(2) + 's';
+          const gt = formatTime(item.gameTime);
+          row.innerHTML = `<td>${item.pair}</td><td>${item.input}</td><td>${status}</td><td>${rec}</td><td>${gt}</td>`;
+          table.appendChild(row);
+        });
+        versusSection.appendChild(table);
+      }
+      container.appendChild(versusSection);
       const levelTitle = document.createElement('h1');
       levelTitle.className = 'custom-title';
       levelTitle.textContent = 'Detalhe dos níveis';
