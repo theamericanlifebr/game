@@ -208,6 +208,7 @@ let esperadoLang = 'pt';
 let timerInterval = null;
 let inputTimeout = null;
 let lastExpected = '', lastInput = '', lastFolder = 1;
+let slideshowInterval = null;
 const TOTAL_FRASES = 25;
 let selectedMode = 1;
 // Removed difficulty selection; game always starts on easy mode
@@ -402,6 +403,12 @@ function stopCurrentGame() {
     reconhecimentoAtivo = false;
     try { reconhecimento.stop(); } catch {}
   }
+  if (slideshowInterval) {
+    clearInterval(slideshowInterval);
+    slideshowInterval = null;
+  }
+  const photo = document.getElementById('photo-viewer');
+  if (photo) photo.style.display = 'none';
 }
 
 function pauseGame(noPenalty = false) {
@@ -878,6 +885,9 @@ function startGame(modo) {
   listeningForCommand = false;
   document.getElementById('menu').style.display = 'none';
   document.getElementById('visor').style.display = 'none';
+  const photo = document.getElementById('photo-viewer');
+  if (photo) photo.style.display = 'none';
+  if (slideshowInterval) clearInterval(slideshowInterval);
   const icon = document.getElementById('mode-icon');
   if (icon) icon.style.display = 'none';
   if (reconhecimento) {
@@ -905,7 +915,11 @@ function startGame(modo) {
       }
     }
   } else {
-    showShortModeIntro(modo, start);
+    if (modo === 7 || modo === 8) {
+      start();
+    } else {
+      showShortModeIntro(modo, start);
+    }
   }
 }
 
@@ -1044,6 +1058,10 @@ function beginGame() {
   modeStartTimes[selectedMode] = Date.now();
   consecutiveErrors = 0;
   paused = false;
+  if (selectedMode === 7 || selectedMode === 8) {
+    startPhotoSlideshow();
+    return;
+  }
   const start = () => {
     document.getElementById('visor').style.display = 'flex';
     const icon = document.getElementById('mode-icon');
@@ -1118,6 +1136,27 @@ function beginGame() {
   };
 
   start();
+}
+
+async function startPhotoSlideshow() {
+  const container = document.getElementById('photo-viewer');
+  const img = document.getElementById('photo-img');
+  container.style.display = 'flex';
+  document.getElementById('intro-overlay').style.display = 'none';
+  if (slideshowInterval) clearInterval(slideshowInterval);
+  try {
+    const resp = await fetch('photos/photos.json');
+    const photos = await resp.json();
+    if (!Array.isArray(photos) || photos.length === 0) return;
+    const showRandom = () => {
+      const idx = Math.floor(Math.random() * photos.length);
+      img.src = 'photos/' + photos[idx];
+    };
+    showRandom();
+    slideshowInterval = setInterval(showRandom, 6200);
+  } catch (e) {
+    console.error('Erro ao carregar fotos', e);
+  }
 }
 
 function falar(texto, lang) {
