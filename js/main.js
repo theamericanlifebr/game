@@ -872,7 +872,34 @@ function stopTryAgainAnimation() {
   tryAgainColorInterval = null;
 }
 
+function showEmptyModeScreen() {
+  const menu = document.getElementById('menu');
+  const visor = document.getElementById('visor');
+  const photo = document.getElementById('photo-viewer');
+  if (menu) menu.style.display = 'none';
+  if (visor) visor.style.display = 'none';
+  if (photo) photo.style.display = 'none';
+  const overlay = document.createElement('div');
+  overlay.id = 'empty-mode-overlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.backgroundColor = '#000';
+  overlay.style.zIndex = '9999';
+  document.body.appendChild(overlay);
+  setTimeout(() => {
+    overlay.remove();
+    if (menu) menu.style.display = 'flex';
+  }, 5700);
+}
+
 function startGame(modo) {
+  if (modo === 7 || modo === 8) {
+    showEmptyModeScreen();
+    return;
+  }
   const prevMode = selectedMode;
   if (prevMode !== modo) {
     recordModeTime(prevMode);
