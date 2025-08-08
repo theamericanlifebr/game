@@ -167,6 +167,25 @@ document.addEventListener('DOMContentLoaded', () => {
     return arr;
   }
 
+  function balanceText(el) {
+    const text = el.textContent.trim();
+    const words = text.split(/\s+/);
+    const targetLen = Math.ceil(text.length / 3);
+    const lines = [];
+    let current = '';
+    words.forEach(word => {
+      const next = current ? current + ' ' + word : word;
+      if (next.length <= targetLen || !current) {
+        current = next;
+      } else {
+        lines.push(current);
+        current = word;
+      }
+    });
+    if (current) lines.push(current);
+    el.innerHTML = lines.join('<br>');
+  }
+
   function nextFrase() {
     if (fraseIndex >= frases.length) fraseIndex = 0;
     const [pt, en] = frases[fraseIndex];
@@ -175,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fraseEl.style.fontSize = '40px';
     fraseEl.style.color = '#fff';
     fraseEl.textContent = pt;
+    balanceText(fraseEl);
     esperado = en.toLowerCase();
     if (modoAtual === 5) {
       const utter = new SpeechSynthesisUtterance(en);

@@ -667,3 +667,23 @@ body.dark-mode #clock {
   }
 }
 
+/* Mobile reading mode adjustments */
+.title-box {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.text-block {
+  margin: 0 20px;
+  text-align: justify;
+  text-wrap: balance;
+}
+
+@media (max-width: 600px) {
+  .title-box {
+    transform: translateY(30px);
+  }
+  .chapter-text {
+    font-family: 'Bookerly', var(--reader-font, serif);
+  }
+}
+
