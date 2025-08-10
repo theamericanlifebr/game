@@ -328,11 +328,33 @@ body.dark-mode #clock {
   transition: opacity 0.2s linear;
 }
 
+body.play-page #mode-buttons {
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 75px);
+  grid-template-rows: repeat(2, 75px);
+  gap: 20px;
+  justify-content: center;
+}
+
+body.play-page #mode-buttons img {
+  width: 75px;
+  height: 75px;
+}
+
 #play-content {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 40px;
+}
+
+body.play-page #play-content {
+  flex-direction: column;
+  gap: 20px;
 }
 
 @media (max-width: 600px) {
