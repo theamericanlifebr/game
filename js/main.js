@@ -1,4 +1,5 @@
 let pastas = {};
+let homophonesMap = {};
 
 function parsePastas(raw) {
   const result = {};
@@ -18,6 +19,24 @@ async function carregarPastas() {
     obj[m[1]] = m[2];
   }
   pastas = parsePastas(obj);
+}
+
+async function carregarHomofonos() {
+  try {
+    const resp = await fetch('data/homophones.txt');
+    const text = await resp.text();
+    const map = {};
+    text.split(/\n+/).filter(Boolean).forEach(line => {
+      const words = line.split('@').map(w => w.trim().toLowerCase()).filter(Boolean);
+      if (words.length) {
+        const canonical = words[0];
+        words.forEach(w => { map[w] = canonical; });
+      }
+    });
+    homophonesMap = map;
+  } catch (e) {
+    console.error('Erro ao carregar homofonos:', e);
+  }
 }
 
 function ehQuaseCorreto(res, esp) {
@@ -1309,15 +1328,22 @@ function verificarResposta() {
     const norm = t => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, "").toLowerCase();
     const esperado = esperadoLang === 'pt' ? pt : en;
     const expectedPhrase = esperado;
-    let normalizadoResp = norm(resposta);
-    const normalizadoEsp = norm(esperado);
-  if (normalizadoResp === 'justicanaterra') {
-    normalizadoResp = normalizadoEsp;
-  }
-  const correto =
-    normalizadoResp === normalizadoEsp ||
-    ehQuaseCorreto(normalizadoResp, normalizadoEsp) ||
-    ehQuaseCorretoPalavras(resposta, esperado);
+
+    const applyCanonical = phrase =>
+      phrase.split(/\s+/).map(w => homophonesMap[w.toLowerCase()] || w).join(' ');
+
+    const respostaCanon = applyCanonical(resposta);
+    const esperadoCanon = applyCanonical(esperado);
+
+    let normalizadoResp = norm(respostaCanon);
+    const normalizadoEsp = norm(esperadoCanon);
+    if (normalizadoResp === 'justicanaterra') {
+      normalizadoResp = normalizadoEsp;
+    }
+    const correto =
+      normalizadoResp === normalizadoEsp ||
+      ehQuaseCorreto(normalizadoResp, normalizadoEsp) ||
+      ehQuaseCorretoPalavras(respostaCanon, esperadoCanon);
 
   const phraseLen = expectedPhrase.replace(/\s+/g, '').length;
   let timePoints = 0;
@@ -1575,6 +1601,7 @@ function startTutorial() {
 async function initGame() {
   const saved = parseInt(localStorage.getItem('pastaAtual'), 10);
   if (saved) pastaAtual = saved;
+  await carregarHomofonos();
   await carregarPastas();
   updateLevelIcon();
   updateModeIcons();
