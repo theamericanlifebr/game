@@ -124,8 +124,7 @@ body.dark-mode #clock {
   height: 227px;
   object-fit: contain;
   cursor: pointer;
-  opacity: 0.3;
-  transition: opacity 0.2s linear;
+  opacity: 0.5;
 }
 
 
@@ -188,7 +187,6 @@ body.dark-mode #clock {
   width: 0%;
   background-color: #ff0000;
   border-radius: 10px;
-  transition: width 1.5s linear, background-color 1.5s linear;
 }
 
 #mode-stats,
@@ -306,7 +304,6 @@ body.dark-mode #clock {
   height: 250px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 500ms linear;
 }
 
 #mode-buttons {
@@ -324,8 +321,7 @@ body.dark-mode #clock {
   width: 117px;
   height: 117px;
   cursor: pointer;
-  opacity: 0.35;
-  transition: opacity 0.2s linear;
+  opacity: 0.5;
 }
 
 body.play-page #mode-buttons {
@@ -343,6 +339,7 @@ body.play-page #mode-buttons {
 body.play-page #mode-buttons img {
   width: 75px;
   height: 75px;
+  opacity: 0.5;
 }
 
 #play-content {
@@ -378,15 +375,6 @@ body.play-page #play-content {
   }
 }
 
-@keyframes mode1Zoom {
-  from { transform: scale(0.8); }
-  to { transform: scale(1); }
-}
-
-@keyframes modeZoom {
-  from { transform: scale(0.8); }
-  to { transform: scale(1); }
-}
 
 #logo-top {
   position: absolute;
@@ -427,8 +415,7 @@ body.play-page #play-content {
 #ilife-logo {
   width: 20%;
   height: auto;
-  opacity: 0;
-  animation: fadeIn 1000ms forwards;
+  opacity: 1;
 }
 
 #ilife-text {
@@ -447,13 +434,9 @@ body.play-page #play-content {
   font-size: 14px;
   color: #777;
   opacity: 0;
-  transition: opacity 500ms linear;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+
 
 /* Play stats page */
 .mode-section {
@@ -496,14 +479,13 @@ body.play-page #play-content {
   fill: none;
   stroke: #444;
   stroke-width: 9.75;
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 .circle-progress {
   fill: none;
   stroke-width: 9.75;
   stroke-linecap: butt;
-  transition: stroke-dashoffset 1s;
 }
 
 .circle-icon {
@@ -585,6 +567,7 @@ body.play-page #play-content {
   width: 150px;
   height: 150px;
   border-radius: 50%;
+  opacity: 0.5;
 }
 
 #mode-list {
@@ -600,8 +583,7 @@ body.play-page #play-content {
   width: 117px;
   height: 117px;
   cursor: pointer;
-  opacity: 0.35;
-  transition: opacity 0.2s linear;
+  opacity: 0.5;
 }
 
 #mode-list img:hover {
@@ -632,6 +614,7 @@ body.play-page #play-content {
   width: 120px;
   height: 120px;
   object-fit: cover;
+  opacity: 0.5;
 }
 
 .stat-bar {
@@ -651,7 +634,6 @@ body.play-page #play-content {
   width: 0;
   background: #ff0000;
   opacity: 1;
-  transition: width 0.5s linear, background-color 0.5s linear, opacity 0.3s;
 }
 
 #versus-phrase {
@@ -677,7 +659,6 @@ body.play-page #play-content {
   height: 100%;
   width: 0;
   background-color: #ff0000;
-  transition: width 0.1s linear, background-color 0.1s linear;
 }
 
 @media (max-width: 600px) {
@@ -706,6 +687,30 @@ body.play-page #play-content {
   }
   .chapter-text {
     font-family: 'Bookerly', var(--reader-font, serif);
+  }
+}
+
+#lavar {
+  background-color: blue;
+}
+
+#consertar {
+  background-color: green;
+}
+
+@media (min-width: 1024px) {
+  #menu-modes {
+    grid-template-columns: repeat(3, 90px);
+    grid-auto-rows: 90px;
+    gap: 20px;
+  }
+  #menu-modes img {
+    width: 90px;
+    height: 90px;
+  }
+  #mode-buttons img {
+    width: 47px;
+    height: 47px;
   }
 }
 

@@ -99,7 +99,6 @@ function createStatCircle(perc, label, iconSrc, extraText) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('play-content');
-  container.style.transition = 'opacity 0.2s';
   const buttons = document.querySelectorAll('#mode-buttons img');
   const clickSound = new Audio('gamesounds/mododesbloqueado.mp3');
   const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
@@ -196,27 +195,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function render(mode) {
-    container.style.opacity = 0;
-    setTimeout(() => {
-      container.innerHTML = '';
-      if (mode === 1) {
-        const { accPerc, timePerc, notReportPerc } = calcGeneralStats();
-        container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
-        container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
-      } else {
-        const { accPerc, timePerc, notReportPerc } = calcModeStats(mode);
-        container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
-        container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
-        container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
-      }
-      container.style.opacity = 1;
-    }, 150);
+    container.innerHTML = '';
+    if (mode === 1) {
+      const { accPerc, timePerc, notReportPerc } = calcGeneralStats();
+      container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
+      container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
+      container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
+    } else {
+      const { accPerc, timePerc, notReportPerc } = calcModeStats(mode);
+      container.appendChild(createStatCircle(accPerc, 'Precisão', 'selos%20modos%20de%20jogo/precisao.png'));
+      container.appendChild(createStatCircle(timePerc, 'Tempo', 'selos%20modos%20de%20jogo/velocidade.png'));
+      container.appendChild(createStatCircle(notReportPerc, 'Report', 'selos%20modos%20de%20jogo/reports.png'));
+    }
   }
 
   function selectMode(mode) {
     buttons.forEach(img => {
-      img.style.opacity = img.dataset.mode == mode ? '1' : '0.3';
+      img.style.opacity = img.dataset.mode == mode ? '1' : '0.5';
     });
     render(mode);
   }
@@ -234,10 +229,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const seq = localStorage.getItem('statsSequence');
   if (seq === 'true') {
     localStorage.removeItem('statsSequence');
-    let delay = 3000;
-    [2, 3, 4, 5, 6].forEach(mode => {
-      setTimeout(() => selectMode(mode), delay);
-      delay += 1500;
-    });
   }
 });
