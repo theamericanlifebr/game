@@ -65,7 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = 'bot-item';
         div.innerHTML = `<img src="users/${bot.file}" alt="${bot.name}"><div>${bot.name}</div>`;
-        div.addEventListener('click', () => showModes(bot));
+        div.addEventListener('click', () => {
+          const img = div.querySelector('img');
+          if (img) img.style.opacity = '1';
+          showModes(bot);
+        });
         list.appendChild(div);
       });
     });
@@ -120,7 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
       img.src = `selos%20modos%20de%20jogo/modo${i}.png`;
       img.alt = `Modo ${i}`;
       img.dataset.mode = i;
-      img.addEventListener('click', () => startVersus(bot, i));
+      img.addEventListener('click', () => {
+        img.style.opacity = '1';
+        startVersus(bot, i);
+      });
       modeList.appendChild(img);
     }
     modeList.style.display = 'grid';
@@ -202,18 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
       speechSynthesis.cancel();
       speechSynthesis.speak(utter);
     } else {
-      setTimeout(() => {
-        fraseEl.style.transition = 'opacity 500ms, font-size 1000ms';
-        fraseEl.style.opacity = 1;
-        fraseEl.style.fontSize = '45px';
-      }, 50);
+      fraseEl.style.opacity = 1;
+      fraseEl.style.fontSize = '45px';
     }
     inicioFrase = Date.now();
     fraseIndex++;
   }
 
   function flashColor(cor) {
-    fraseEl.style.transition = 'color 500ms';
     fraseEl.style.color = cor;
     setTimeout(() => {
       fraseEl.style.color = '#fff';
@@ -282,12 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setBar(fill, perc) {
-    fill.style.opacity = 0;
-    setTimeout(() => {
-      fill.style.width = (perc * 2) + 'px';
-      fill.style.backgroundColor = colorFromPercent(perc);
-      fill.style.opacity = 1;
-    }, 200);
+    fill.style.width = (perc * 2) + 'px';
+    fill.style.backgroundColor = colorFromPercent(perc);
+    fill.style.opacity = 1;
   }
 
   function updateBars() {
@@ -316,7 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function encerrar() {
-    fraseEl.style.transition = 'opacity 0.5s';
     fraseEl.style.opacity = 0;
     modoAtual = 0;
     if (reconhecimento) try { reconhecimento.stop(); } catch (err) {}

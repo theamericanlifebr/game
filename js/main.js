@@ -440,7 +440,6 @@ function pauseGame(noPenalty = false) {
   bloqueado = true;
   const texto = document.getElementById('texto-exibicao');
   if (texto) {
-    texto.style.transition = 'opacity 500ms linear';
     texto.style.opacity = '0';
   }
   const input = document.getElementById('pt');
@@ -468,7 +467,6 @@ function resumeGame() {
   }
   const texto = document.getElementById('texto-exibicao');
   if (texto) {
-    texto.style.transition = 'opacity 500ms linear';
     texto.style.opacity = '1';
   }
   const input = document.getElementById('pt');
@@ -498,7 +496,6 @@ function triggerDownPlay() {
   if (input) input.disabled = true;
   const texto = document.getElementById('texto-exibicao');
   if (texto) {
-    texto.style.transition = 'opacity 2000ms linear';
     texto.style.opacity = '0';
   }
   const audio = new Audio('gamesounds/down.wav');
@@ -552,21 +549,16 @@ function reportLastError() {
 function updateLevelIcon() {
   const icon = document.getElementById('nivel-indicador');
   if (icon) {
-    icon.style.transition = 'opacity 500ms linear';
-    icon.style.opacity = '0';
-    setTimeout(() => {
-      icon.src = `selos_niveis/level%20${pastaAtual}.png`;
-      icon.style.opacity = '1';
-    }, 500);
+    icon.src = `selos_niveis/level%20${pastaAtual}.png`;
+    icon.style.opacity = '1';
   }
   localStorage.setItem('pastaAtual', pastaAtual);
 }
 
-function unlockMode(mode, duration = 1000) {
+function unlockMode(mode) {
   unlockedModes[mode] = true;
   localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
   document.querySelectorAll(`#menu-modes img[data-mode="${mode}"], #mode-buttons img[data-mode="${mode}"]`).forEach(img => {
-    img.style.transition = `opacity ${duration}ms linear`;
     img.style.opacity = '1';
   });
 }
@@ -577,7 +569,7 @@ function updateModeIcons() {
     if (unlockedModes[mode]) {
       img.style.opacity = '1';
     } else {
-      img.style.opacity = '0.3';
+      img.style.opacity = '0.5';
     }
   });
   checkForMenuLevelUp();
@@ -596,8 +588,7 @@ function performMenuLevelUp() {
   const icons = document.querySelectorAll('#menu-modes img, #mode-buttons img');
   icons.forEach(img => {
     const modo = parseInt(img.dataset.mode, 10);
-    img.style.transition = 'opacity 500ms linear';
-    img.style.opacity = modo === 1 ? '1' : '0.3';
+    img.style.opacity = modo === 1 ? '1' : '0.5';
   });
   setTimeout(() => {
     pastaAtual++;
@@ -646,8 +637,7 @@ function menuLevelUpSequence() {
   const menu = document.getElementById('menu');
   const icons = menu.querySelectorAll('#menu-modes img');
   icons.forEach(img => {
-    img.style.transition = 'opacity 1ms linear';
-    img.style.opacity = '0.3';
+    img.style.opacity = '0.5';
   });
   const audio = document.getElementById('somNivelDesbloqueado');
   if (audio) { audio.currentTime = 0; audio.play(); }
@@ -655,30 +645,20 @@ function menuLevelUpSequence() {
   const msg = document.createElement('div');
   msg.id = 'next-level-msg';
   msg.textContent = 'diga next level para avançar';
-  msg.style.display = 'none';
   menu.appendChild(msg);
 
-  let idx = 0;
-  const interval = setInterval(() => {
-    if (idx < icons.length) {
-      icons[idx].style.opacity = '1';
-      idx++;
-    } else {
-      clearInterval(interval);
-      msg.style.display = 'block';
-      setTimeout(() => { msg.style.opacity = '1'; }, 10);
-      awaitingNextLevel = true;
-      nextLevelCallback = () => {
-        msg.remove();
-        performMenuLevelUp();
-      };
-      if (reconhecimento) {
-        reconhecimentoAtivo = true;
-        reconhecimento.lang = 'en-US';
-        reconhecimento.start();
-      }
-    }
-  }, 500);
+  icons.forEach(img => { img.style.opacity = '1'; });
+  msg.style.display = 'block';
+  awaitingNextLevel = true;
+  nextLevelCallback = () => {
+    msg.remove();
+    performMenuLevelUp();
+  };
+  if (reconhecimento) {
+    reconhecimentoAtivo = true;
+    reconhecimento.lang = 'en-US';
+    reconhecimento.start();
+  }
 }
 
 let transitioning = false;
@@ -767,19 +747,7 @@ function resetIntroProgress() {
   filled.style.backgroundColor = calcularCor(0);
 }
 
-function startTryAgainAnimation() {
-  const msg = document.getElementById('nivel-mensagem');
-  if (!msg) return;
-  if (tryAgainColorInterval) clearInterval(tryAgainColorInterval);
-  const duration = 30000;
-  const maxPoints = selectedMode === 6 ? MODE6_THRESHOLD : 25000;
-  const begin = Date.now();
-  tryAgainColorInterval = setInterval(() => {
-    const elapsed = (Date.now() - begin) % duration;
-    const pts = (elapsed / duration) * maxPoints;
-    msg.style.color = calcularCor(pts);
-  }, 50);
-}
+function startTryAgainAnimation() {}
 
 function stopTryAgainAnimation() {
   if (tryAgainColorInterval) clearInterval(tryAgainColorInterval);
@@ -865,103 +833,15 @@ function startGame(modo) {
 }
 
 function showMode1Intro(callback) {
-  const overlay = document.getElementById('intro-overlay');
-  const audio = document.getElementById('somModo1Intro');
-  const img = document.getElementById('intro-image');
-  atualizarBarraProgresso();
-  img.style.animation = 'none';
-  img.style.transition = 'none';
-  img.style.opacity = '1';
-  img.style.transform = 'scale(0.8)';
-  void img.offsetWidth;
-  img.style.transition = 'transform 10000ms linear';
-  overlay.style.display = 'flex';
-  startIntroProgress(10000);
-  audio.currentTime = 0;
-  audio.play();
-  img.style.transform = 'scale(1)';
-  setTimeout(() => {
-    img.style.transition = 'opacity 2000ms linear';
-    img.style.opacity = '0';
-  }, 8000);
-  setTimeout(() => {
-    overlay.style.display = 'none';
-    img.style.transition = 'none';
-    img.style.opacity = '1';
-    img.style.transform = 'scale(1)';
-    resetIntroProgress();
-    callback();
-  }, 10000);
+  callback();
 }
 
 function showModeIntro(info, callback) {
-  const overlay = document.getElementById('intro-overlay');
-  const img = document.getElementById('intro-image');
-  const audio = document.getElementById(info.audio);
-  atualizarBarraProgresso();
-  img.src = info.img;
-  img.style.animation = 'none';
-  img.style.transition = 'none';
-  img.style.opacity = '1';
-  img.style.transform = 'scale(0.8)';
-  void img.offsetWidth;
-  img.style.transition = `transform ${info.duration}ms linear`;
-  overlay.style.display = 'flex';
-  startIntroProgress(info.duration);
-  if (audio) {
-    audio.currentTime = 0;
-    audio.play();
-  }
-  img.style.transform = 'scale(1)';
-  setTimeout(() => {
-    img.style.transition = 'opacity 2000ms linear';
-    img.style.opacity = '0';
-  }, info.duration - 2000);
-  setTimeout(() => {
-    overlay.style.display = 'none';
-    img.style.transition = 'none';
-    img.style.opacity = '1';
-    img.style.transform = 'scale(1)';
-    resetIntroProgress();
-    callback();
-  }, info.duration);
+  callback();
 }
 
 function showModeTransition(info, callback) {
-  const overlay = document.getElementById('intro-overlay');
-  const img = document.getElementById('intro-image');
-  const audio = document.getElementById(info.audio);
-  atualizarBarraProgresso();
-  if (reconhecimento) {
-    reconhecimentoAtivo = false;
-    reconhecimento.stop();
-  }
-  img.src = info.img;
-  img.style.animation = 'none';
-  img.style.transition = 'none';
-  img.style.opacity = '1';
-  img.style.transform = 'scale(0.8)';
-  void img.offsetWidth;
-  img.style.transition = `transform ${info.duration}ms linear`;
-  overlay.style.display = 'flex';
-  startIntroProgress(info.duration);
-  if (audio) {
-    audio.currentTime = 0;
-    audio.play();
-  }
-  img.style.transform = 'scale(1)';
-  setTimeout(() => {
-    img.style.transition = 'opacity 2000ms linear';
-    img.style.opacity = '0';
-  }, info.duration - 2000);
-  setTimeout(() => {
-    overlay.style.display = 'none';
-    img.style.transition = 'none';
-    img.style.opacity = '1';
-    img.style.transform = 'scale(1)';
-    resetIntroProgress();
-    callback();
-  }, info.duration);
+  callback();
 }
 
 function showLevelUp(callback) {
@@ -1119,28 +999,7 @@ function toggleEn() {
 }
 
 function showShortModeIntro(modo, callback) {
-  const overlay = document.getElementById('intro-overlay');
-  const img = document.getElementById('intro-image');
-  const audio = document.getElementById('somWoosh');
-  img.src = modeImages[modo];
-  img.style.animation = 'none';
-  img.style.transition = 'none';
-  img.style.opacity = '1';
-  img.style.width = '200px';
-  img.style.height = '200px';
-  void img.offsetWidth;
-  img.style.transition = 'width 3000ms linear, height 3000ms linear';
-  overlay.style.display = 'flex';
-  if (audio) { audio.currentTime = 0; audio.play(); }
-  img.style.width = '350px';
-  img.style.height = '350px';
-  setTimeout(() => {
-    overlay.style.display = 'none';
-    img.style.transition = 'none';
-    img.style.width = '';
-    img.style.height = '';
-    callback();
-  }, 3000);
+  callback();
 }
 
 function falarFrase() {
@@ -1227,10 +1086,8 @@ function mostrarFrase() {
 function flashSuccess(callback) {
   const texto = document.getElementById('texto-exibicao');
   const color = calcularCor(points);
-  texto.style.transition = 'color 500ms linear';
   texto.style.color = color;
   setTimeout(() => {
-    texto.style.transition = 'color 500ms linear';
     texto.style.color = '#333';
     setTimeout(() => {
       document.getElementById('resultado').textContent = '';
@@ -1243,10 +1100,8 @@ function flashError(expected, callback) {
   const texto = document.getElementById('texto-exibicao');
   const previous = texto.textContent;
   texto.textContent = expected;
-  texto.style.transition = 'color 500ms linear';
   texto.style.color = 'red';
   setTimeout(() => {
-    texto.style.transition = 'color 500ms linear';
     texto.style.color = '#333';
     setTimeout(() => {
       texto.textContent = previous;
@@ -1546,7 +1401,7 @@ function startTutorial() {
   tutorialInProgress = true;
   localStorage.setItem('tutorialDone', 'true');
   const welcome = document.getElementById('somWelcome');
-  if (welcome) setTimeout(() => { welcome.currentTime = 0; welcome.play(); }, 1);
+  if (welcome) { welcome.currentTime = 0; welcome.play(); }
 
   const tutorialLogo = document.getElementById('tutorial-logo');
   const logoTop = document.getElementById('logo-top');
@@ -1557,44 +1412,18 @@ function startTutorial() {
   if (levelIcon) levelIcon.style.display = 'none';
   if (menuLogo) menuLogo.style.display = 'none';
   if (tutorialLogo) {
-    tutorialLogo.style.display = 'block';
-    tutorialLogo.style.width = '20%';
-    setTimeout(() => { tutorialLogo.style.display = 'none'; }, 750);
+    tutorialLogo.style.display = 'none';
   }
 
-  menuIcons.forEach(img => { img.style.opacity = '0'; });
-
-  setTimeout(() => {
-    menuIcons.forEach(img => {
-      img.style.transition = 'opacity 2000ms linear';
-      img.style.opacity = '0.3';
-    });
-  }, 4000);
-
-  setTimeout(() => {
-    const seq = [1, 2, 3, 4, 5, 6].map(n => document.querySelector(`#menu-modes img[data-mode="${n}"]`));
-    seq.forEach((img, idx) => {
-      setTimeout(() => {
-        if (!img) return;
-        img.style.transition = 'opacity 200ms linear';
-        img.style.opacity = '0.99';
-        setTimeout(() => {
-          img.style.transition = 'opacity 200ms linear';
-          img.style.opacity = '0.3';
-        }, 200);
-      }, idx * 450);
-    });
-  }, 7000);
+  menuIcons.forEach(img => { img.style.opacity = '0.5'; });
 
   const mode1 = document.querySelector('#menu-modes img[data-mode="1"]');
 
-  setTimeout(() => { if (levelIcon) levelIcon.style.display = 'block'; }, 11420);
-  setTimeout(() => {
-    if (logoTop) logoTop.style.display = 'block';
-    if (menuLogo) menuLogo.style.display = 'block';
-    if (mode1) unlockMode(1, 1000);
-    tutorialInProgress = false;
-  }, 11421);
+  if (levelIcon) levelIcon.style.display = 'block';
+  if (logoTop) logoTop.style.display = 'block';
+  if (menuLogo) menuLogo.style.display = 'block';
+  if (mode1) unlockMode(1);
+  tutorialInProgress = false;
 }
 
 
@@ -1651,6 +1480,7 @@ async function initGame() {
         if (lock) { lock.currentTime = 0; lock.play(); }
         return;
       }
+      img.style.opacity = '1';
       startGame(modo);
     });
   });
