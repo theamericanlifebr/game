@@ -193,6 +193,7 @@ body.dark-mode #clock {
   position: absolute;
   top: 0;
   left: 0;
+  transition: width 0.4s ease;
 }
 
 #barra-buffer {
@@ -204,6 +205,7 @@ body.dark-mode #clock {
   top: 0;
   left: 0;
   opacity: 0.5;
+  transition: width 0.4s ease;
 }
 
 #mode-stats,
@@ -313,7 +315,7 @@ body.dark-mode #clock {
 
 #mode-buttons {
   position: fixed;
-  bottom: 135px;
+  bottom: 160px;
   left: 0;
   width: 100%;
   display: flex;
@@ -330,7 +332,7 @@ body.dark-mode #clock {
 }
 
 body.play-page #mode-buttons {
-  bottom: 70px;
+  bottom: 95px;
   left: 50%;
   transform: translateX(-50%);
   width: auto;
@@ -401,6 +403,11 @@ body.play-page #play-content {
     caret-color: #fff;
   }
 
+  #visor .circle-label,
+  #visor .circle-extra {
+    color: #fff;
+  }
+
   #barra-progresso {
     background: rgba(255, 255, 255, 0.2);
   }
@@ -411,7 +418,7 @@ body.play-page #play-content {
 
   #mode-buttons {
     position: static;
-    margin: 40px auto 0;
+    margin: 15px auto 0;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 80px));
     grid-template-rows: repeat(2, auto);
@@ -424,7 +431,7 @@ body.play-page #play-content {
 
   body.play-page #mode-buttons {
     position: static;
-    margin: 40px auto 0;
+    margin: 15px auto 0;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 80px));
     grid-template-rows: repeat(2, auto);
