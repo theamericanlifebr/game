@@ -7,6 +7,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script>
+    const ilifeStatus = localStorage.getItem('ilifeDone');
+    if (ilifeStatus !== 'true') {
+      localStorage.setItem('ilifeDone', 'true');
+    }
     if (localStorage.getItem('ilifeDone') === 'true') {
       document.write('<style>#ilife-screen{display:none;}#menu{display:flex;}</style>');
     }
