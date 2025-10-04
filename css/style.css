@@ -220,18 +220,6 @@ body.dark-mode #clock {
   display: none;
 }
 
-#nivel-indicador {
-  position: absolute;
-  top: 70px;
-  left: 70px;
-  width: 68px;
-  height: 68px;
-  object-fit: contain;
-  user-select: none;
-  pointer-events: none;
-}
-
-
 #timer {
   display: none;
   font-size: 18px;
@@ -392,16 +380,41 @@ body.play-page #play-content {
     height: 100px;
   }
 
-  #barra-progresso {
-    background: rgba(0, 0, 0, 0.1);
+  #visor {
+    background: #000;
+    color: #fff;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 40px 20px 140px;
   }
 
-  body.play-page #mode-buttons {
+  #visor #texto-exibicao,
+  #visor #resultado,
+  #visor #acertos,
+  #visor #nivel-mensagem,
+  #visor #timer {
+    color: #fff;
+  }
+
+  #visor #pt {
+    color: #fff;
+    caret-color: #fff;
+  }
+
+  #barra-progresso {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  #barra-buffer {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  #mode-buttons {
     position: static;
-    margin: 50px auto 0;
+    margin: 40px auto 0;
     display: grid;
-    grid-template-columns: repeat(3, 75px);
-    grid-template-rows: repeat(2, 75px);
+    grid-template-columns: repeat(3, minmax(0, 80px));
+    grid-template-rows: repeat(2, auto);
     gap: 20px;
     justify-content: center;
     justify-items: center;
@@ -409,17 +422,27 @@ body.play-page #play-content {
     width: 100%;
   }
 
-  body.play-page #mode-buttons img,
-  #mode-buttons img {
-    width: 75px;
-    height: 75px;
+  body.play-page #mode-buttons {
+    position: static;
+    margin: 40px auto 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 80px));
+    grid-template-rows: repeat(2, auto);
+    gap: 20px;
+    justify-content: center;
+    justify-items: center;
+    transform: none;
+    width: 100%;
   }
 
-  #nivel-indicador {
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(68px * 1.2);
-    height: calc(68px * 1.2);
+  #mode-buttons img {
+    width: 80px;
+    height: 80px;
+  }
+
+  body.play-page #mode-buttons img {
+    width: 80px;
+    height: 80px;
   }
 }
 
