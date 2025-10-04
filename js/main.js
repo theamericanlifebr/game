@@ -254,7 +254,17 @@ function getTimeMetrics(len, mode) {
   return { perfect, worst };
 }
 let completedModes = JSON.parse(localStorage.getItem('completedModes') || '{}');
-let unlockedModes = JSON.parse(localStorage.getItem('unlockedModes') || '{}');
+let unlockedModes;
+try {
+  const storedUnlocked = localStorage.getItem('unlockedModes');
+  unlockedModes = storedUnlocked ? JSON.parse(storedUnlocked) : null;
+} catch (e) {
+  unlockedModes = null;
+}
+if (!unlockedModes || Object.keys(unlockedModes).length === 0) {
+  unlockedModes = { 1: true };
+  localStorage.setItem('unlockedModes', JSON.stringify(unlockedModes));
+}
 let modeIntroShown = JSON.parse(localStorage.getItem('modeIntroShown') || '{}');
 let points = parseInt(localStorage.getItem('points') || INITIAL_POINTS, 10);
 let premioBase = 4000;
@@ -271,6 +281,10 @@ let levelUpReady = false;
 let tutorialInProgress = false;
 let tutorialDone = localStorage.getItem('tutorialDone') === 'true';
 let ilifeDone = localStorage.getItem('ilifeDone') === 'true';
+if (!ilifeDone) {
+  localStorage.setItem('ilifeDone', 'true');
+  ilifeDone = true;
+}
 let ilifeActive = false;
 let sessionStart = null;
 const legacyStats = JSON.parse(localStorage.getItem('mode1Stats') || 'null');
