@@ -391,6 +391,36 @@ body.play-page #play-content {
     width: 100px;
     height: 100px;
   }
+
+  #barra-progresso {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  body.play-page #mode-buttons {
+    position: static;
+    margin: 50px auto 0;
+    display: grid;
+    grid-template-columns: repeat(3, 75px);
+    grid-template-rows: repeat(2, 75px);
+    gap: 20px;
+    justify-content: center;
+    justify-items: center;
+    transform: none;
+    width: 100%;
+  }
+
+  body.play-page #mode-buttons img,
+  #mode-buttons img {
+    width: 75px;
+    height: 75px;
+  }
+
+  #nivel-indicador {
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(68px * 1.2);
+    height: calc(68px * 1.2);
+  }
 }
 
 
