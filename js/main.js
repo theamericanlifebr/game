@@ -304,36 +304,20 @@ let pauseInterval = null;
 let downPlaying = false;
 let downTimeout = null;
 
-const colorModes = ['light', 'dark', 'gradient'];
-let colorModeIndex = parseInt(localStorage.getItem('colorMode') || '0', 10);
+const availableThemes = (window.getAvailableThemes && window.getAvailableThemes()) || ['black', 'white', 'blue'];
+let currentTheme = (window.getSelectedTheme && window.getSelectedTheme()) || 'black';
 
-function updateGradientColor(color) {
-  if (document.body.classList.contains('gradient-mode')) {
-    document.body.style.setProperty('--grad-color', color);
+function cycleTheme() {
+  const index = availableThemes.indexOf(currentTheme);
+  const nextTheme = availableThemes[(index + 1) % availableThemes.length];
+  if (window.applyTheme) {
+    window.applyTheme(nextTheme);
   }
 }
 
-function applyColorMode() {
-  document.body.classList.remove('dark-mode', 'gradient-mode');
-  const mode = colorModes[colorModeIndex];
-  if (mode === 'dark') {
-    document.body.classList.add('dark-mode');
-    document.body.style.removeProperty('--grad-color');
-  } else if (mode === 'gradient') {
-    document.body.classList.add('dark-mode', 'gradient-mode');
-    updateGradientColor(calcularCor(points));
-  } else {
-    document.body.style.removeProperty('--grad-color');
-  }
-  localStorage.setItem('colorMode', colorModeIndex);
-}
-
-function toggleDarkMode() {
-  colorModeIndex = (colorModeIndex + 1) % colorModes.length;
-  applyColorMode();
-}
-
-applyColorMode();
+window.addEventListener('themechange', (event) => {
+  currentTheme = event.detail;
+});
 
 const reportClickHandler = () => {
   if (downPlaying) handleReportClick();
@@ -1299,7 +1283,6 @@ function atualizarBarraProgresso() {
   filled.style.width = perc + '%';
   const barColor = calcularCor(points);
   filled.style.backgroundColor = barColor;
-  updateGradientColor(barColor);
   const icon = document.getElementById('mode-icon');
   if (icon) {
     icon.style.opacity = perc / 100;
@@ -1516,7 +1499,7 @@ async function initGame() {
       return;
     }
     if (e.key === 'r') falarFrase();
-    if (e.key.toLowerCase() === 'h') toggleDarkMode();
+    if (e.key.toLowerCase() === 'h') cycleTheme();
     if (e.key.toLowerCase() === 'i') {
       const [pt, en] = frasesArr[fraseIndex] || ['',''];
       const esperado = esperadoLang === 'pt' ? pt : en;

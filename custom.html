@@ -6,8 +6,9 @@
   <title>Custom</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js" defer></script>
 </head>
-<body class="dark-mode">
+<body class="theme-black">
   <nav id="top-nav">
     <a href="index.html">home</a>
     <a href="#">fun</a>
@@ -15,7 +16,15 @@
     <a href="custom.html">custom</a>
     <a href="versus.html">versus</a>
   </nav>
-  <div id="custom-content" style="text-align:center;margin-top:50px;"></div>
+  <section id="theme-selector">
+    <h1>Temas do jogo</h1>
+    <div class="theme-options">
+      <button class="theme-option" type="button" data-theme="black">Preto</button>
+      <button class="theme-option" type="button" data-theme="white">Branco</button>
+      <button class="theme-option" type="button" data-theme="blue">Azul</button>
+    </div>
+  </section>
+  <div id="custom-content" style="text-align:center;margin-top:30px;"></div>
   <script src="js/disableScroll.js"></script>
   <script>
     function formatTime(ms) {
@@ -42,6 +51,28 @@
       return table;
     }
     document.addEventListener('DOMContentLoaded', () => {
+      const themeButtons = document.querySelectorAll('.theme-option');
+      const updateThemeButtons = (selected) => {
+        themeButtons.forEach(btn => {
+          const isActive = btn.dataset.theme === selected;
+          btn.classList.toggle('active', isActive);
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+      };
+      const selectedTheme = window.getSelectedTheme ? window.getSelectedTheme() : 'black';
+      updateThemeButtons(selectedTheme);
+      themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const theme = btn.dataset.theme;
+          if (window.applyTheme) {
+            window.applyTheme(theme);
+          }
+          updateThemeButtons(theme);
+        });
+      });
+      window.addEventListener('themechange', (event) => {
+        updateThemeButtons(event.detail);
+      });
       const container = document.getElementById('custom-content');
       const versusLog = JSON.parse(localStorage.getItem('versusLog') || '[]');
       if (versusLog.length) {

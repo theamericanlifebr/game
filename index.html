@@ -6,6 +6,7 @@
   <title>American Life</title>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js" defer></script>
   <script>
     const ilifeStatus = localStorage.getItem('ilifeDone');
     if (ilifeStatus !== 'true') {
@@ -16,7 +17,7 @@
     }
   </script>
 </head>
-  <body class="dark-mode">
+  <body class="theme-black">
     <nav id="top-nav">
     <a href="#" id="home-link">home</a>
     <a href="#">fun</a>
@@ -28,7 +29,6 @@
       <img id="ilife-logo" src="selos%20modos%20de%20jogo/logoitalk2.png" alt="Logo Italk">
       <div id="ilife-text">toque para<br>desbloquear sua fluência</div>
     </div>
-  <img id="nivel-indicador" alt="Level" />
   <img id="tutorial-logo" src="selos%20modos%20de%20jogo/logoitalk2.png" alt="Logo Italk" style="display:none" />
   <div id="menu" style="display:none">
     <div id="menu-modes">
@@ -48,7 +48,9 @@
     <div id="mode-stats">
       <img id="mode-icon" alt="Mode Icon" style="display:none" />
     </div>
-    <div id="texto-exibicao"></div>
+    <div id="texto-wrapper">
+      <div id="texto-exibicao"></div>
+    </div>
     <div id="barra-progresso">
       <div id="barra-buffer"></div>
       <div id="barra-preenchida"></div>
