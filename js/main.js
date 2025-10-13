@@ -83,6 +83,7 @@ let listeningForCommand = true;
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 let allowInput = true;
 let silenceTimer;
+let gameActive = false;
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -407,6 +408,7 @@ function recordModeTime(mode) {
 }
 
 function stopCurrentGame() {
+  gameActive = false;
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
@@ -415,6 +417,10 @@ function stopCurrentGame() {
     clearInterval(prizeTimer);
     prizeTimer = null;
   }
+  if (inputTimeout) {
+    clearTimeout(inputTimeout);
+    inputTimeout = null;
+  }
   if (reconhecimento) {
     reconhecimentoAtivo = false;
     try { reconhecimento.stop(); } catch {}
@@ -422,6 +428,9 @@ function stopCurrentGame() {
   if (slideshowInterval) {
     clearInterval(slideshowInterval);
     slideshowInterval = null;
+  }
+  if (typeof speechSynthesis !== 'undefined') {
+    speechSynthesis.cancel();
   }
   const photo = document.getElementById('photo-viewer');
   if (photo) photo.style.display = 'none';
@@ -477,7 +486,10 @@ function resumeGame() {
     reconhecimentoAtivo = true;
     reconhecimento.start();
   }
-  continuar();
+  if (selectedMode >= 1 && selectedMode <= 6) {
+    gameActive = true;
+    continuar();
+  }
 }
 
 function triggerDownPlay() {
@@ -877,7 +889,8 @@ function beginGame() {
   modeStartTimes[selectedMode] = Date.now();
   consecutiveErrors = 0;
   paused = false;
-  if (selectedMode === 7 || selectedMode === 8) {
+  gameActive = selectedMode >= 1 && selectedMode <= 6;
+  if (!gameActive) {
     startPhotoSlideshow();
     return;
   }
@@ -1041,13 +1054,17 @@ function carregarFrases() {
   );
   frasesArr = embaralhar(frasesArr);
   fraseIndex = 0;
-  setTimeout(() => mostrarFrase(), 300);
+  if (gameActive) {
+    mostrarFrase();
+  }
   atualizarBarraProgresso();
 }
 
 function mostrarFrase() {
+  if (!gameActive) return;
   if (inputTimeout) clearTimeout(inputTimeout);
   if (fraseIndex >= frasesArr.length) fraseIndex = 0;
+  if (!frasesArr.length || !frasesArr[fraseIndex]) return;
   const [pt, en] = frasesArr[fraseIndex];
   const texto = document.getElementById("texto-exibicao");
   if (mostrarTexto === 'pt') texto.textContent = pt;
@@ -1267,7 +1284,7 @@ function verificarResposta() {
   }
 
 function continuar() {
-  if (transitioning) {
+  if (!gameActive || transitioning) {
     return;
   }
   fraseIndex++;
@@ -1301,7 +1318,12 @@ function finishMode() {
     if (audio) { audio.currentTime = 0; audio.play(); }
 
     if (selectedMode === 5) {
-      setTimeout(() => { continuar(); }, 500);
+      setTimeout(() => {
+        if (selectedMode === 5 && !paused) {
+          gameActive = true;
+          continuar();
+        }
+      }, 500);
     }
   }
 
