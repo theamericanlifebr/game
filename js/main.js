@@ -1061,14 +1061,35 @@ function carregarFrases() {
   atualizarBarraProgresso();
 }
 
+function setPhraseTheme(theme) {
+  const texto = document.getElementById('texto-exibicao');
+  if (!texto) return;
+  texto.classList.remove('phrase-box--dark', 'phrase-box--light', 'phrase-box--hidden', 'phrase-box--success', 'phrase-box--error');
+  if (theme === 'dark') {
+    texto.classList.add('phrase-box--dark');
+  } else if (theme === 'light') {
+    texto.classList.add('phrase-box--light');
+  } else if (theme === 'hidden') {
+    texto.classList.add('phrase-box--dark', 'phrase-box--hidden');
+  }
+}
+
 function mostrarFrase() {
   if (inputTimeout) clearTimeout(inputTimeout);
   if (fraseIndex >= frasesArr.length) fraseIndex = 0;
   const [pt, en] = frasesArr[fraseIndex];
   const texto = document.getElementById("texto-exibicao");
-  if (mostrarTexto === 'pt') texto.textContent = pt;
-  else if (mostrarTexto === 'en') texto.textContent = en;
-  else texto.textContent = '';
+  if (!texto) return;
+  if (mostrarTexto === 'pt') {
+    texto.textContent = pt;
+    setPhraseTheme('light');
+  } else if (mostrarTexto === 'en') {
+    texto.textContent = en;
+    setPhraseTheme('dark');
+  } else {
+    texto.textContent = '';
+    setPhraseTheme('hidden');
+  }
   document.getElementById("pt").value = '';
   document.getElementById("pt").disabled = false;
   if (voz === 'en') falar(en, 'en');
@@ -1099,10 +1120,13 @@ function mostrarFrase() {
 
 function flashSuccess(callback) {
   const texto = document.getElementById('texto-exibicao');
-  const color = calcularCor(points);
-  texto.style.color = color;
+  if (!texto) {
+    callback();
+    return;
+  }
+  texto.classList.add('phrase-box--success');
   setTimeout(() => {
-    texto.style.color = '#333';
+    texto.classList.remove('phrase-box--success');
     setTimeout(() => {
       document.getElementById('resultado').textContent = '';
       callback();
@@ -1112,13 +1136,20 @@ function flashSuccess(callback) {
 
 function flashError(expected, callback) {
   const texto = document.getElementById('texto-exibicao');
+  if (!texto) {
+    callback();
+    return;
+  }
   const previous = texto.textContent;
+  const wasHidden = texto.classList.contains('phrase-box--hidden');
   texto.textContent = expected;
-  texto.style.color = 'red';
+  if (wasHidden) texto.classList.remove('phrase-box--hidden');
+  texto.classList.add('phrase-box--error');
   setTimeout(() => {
-    texto.style.color = '#333';
+    texto.classList.remove('phrase-box--error');
     setTimeout(() => {
       texto.textContent = previous;
+      if (wasHidden) texto.classList.add('phrase-box--hidden');
       document.getElementById('resultado').textContent = '';
       callback();
     }, 500);
