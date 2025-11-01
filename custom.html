@@ -18,15 +18,6 @@
   <div id="custom-content" style="text-align:center;margin-top:50px;"></div>
   <script src="js/disableScroll.js"></script>
   <script>
-    function safeParse(value, fallback) {
-      if (typeof value !== 'string') return fallback;
-      try {
-        return JSON.parse(value);
-      } catch (err) {
-        console.error('Erro ao analisar JSON:', err);
-        return fallback;
-      }
-    }
     function formatTime(ms) {
       const sec = Math.floor(ms / 1000);
       const min = Math.floor(sec / 60);
@@ -35,7 +26,7 @@
     }
     function createRankingTable(data, color, columns) {
       const table = document.createElement('table');
-      table.className = 'ranking-table' + (color ? ` ${color}` : '');
+      table.className = `ranking-table ${color}`;
       const header = document.createElement('tr');
       header.innerHTML = columns.map(c => `<th>${c.label}</th>`).join('');
       table.appendChild(header);
@@ -43,29 +34,16 @@
         const row = document.createElement('tr');
         columns.forEach(c => {
           const td = document.createElement('td');
-          const value = c.format ? c.format(item) : item[c.field];
-          td.textContent = value === undefined || value === null ? '' : value;
+          td.textContent = item[c.field];
           row.appendChild(td);
         });
         table.appendChild(row);
       });
       return table;
     }
-    function getUserId(user) {
-      if (!user || typeof user !== 'object') return null;
-      return user.id || user.uid || user.userId || user.email || user.username || user.name || 'local-user';
-    }
-    function getUserName(user, fallback = 'Jogador') {
-      if (!user || typeof user !== 'object') return fallback;
-      return user.name || user.displayName || user.username || user.email || fallback;
-    }
-    function getModeStats(source, mode) {
-      if (!source || typeof source !== 'object') return {};
-      return source[mode] || source[String(mode)] || {};
-    }
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('custom-content');
-      const versusLog = safeParse(localStorage.getItem('versusLog'), []);
+      const versusLog = JSON.parse(localStorage.getItem('versusLog') || '[]');
       if (versusLog.length) {
         const vTitle = document.createElement('h1');
         vTitle.className = 'custom-title';
@@ -83,30 +61,9 @@
         });
         container.appendChild(table);
       }
-      const statsData = safeParse(localStorage.getItem('modeStats'), {});
-      const currentUser = safeParse(localStorage.getItem('currentUser'), null);
-      const sharedRankings = safeParse(localStorage.getItem('sharedRankings'), []);
-      const shareEnabled = Boolean(currentUser && currentUser.shareResults);
-      const localUserId = getUserId(currentUser);
-      const localDisplayName = (currentUser && (currentUser.displayName || currentUser.name || currentUser.username || currentUser.email)) || 'Você';
-      let sharedUsers = Array.isArray(sharedRankings) ? sharedRankings.filter(u => u && u.shareResults) : [];
-      if (shareEnabled) {
-        const statsSource = (currentUser && currentUser.stats) || statsData;
-        const existing = sharedUsers.find(u => u.id === localUserId);
-        if (existing) {
-          if (!existing.stats) existing.stats = statsSource;
-          if (!existing.name) existing.name = localDisplayName;
-        } else {
-          sharedUsers.push({
-            id: localUserId || 'local-user',
-            name: localDisplayName,
-            stats: statsSource,
-            shareResults: true
-          });
-        }
-      }
+      const statsData = JSON.parse(localStorage.getItem('modeStats') || '{}');
       for (let i = 1; i <= 6; i++) {
-        const stats = getModeStats(statsData, i);
+        const stats = statsData[i] || {};
         const totalTime = stats.totalTime || 0;
         const total = stats.totalPhrases || 0;
         const correct = stats.correct || 0;
@@ -129,43 +86,26 @@
           <div class="custom-info">Pontos de tempo: ${avgPts}</div>
           <div class="custom-info">Uso de reportar: ${reportPerc}%</div>
         `;
-        const includeLocalBase = !(shareEnabled && sharedUsers.some(u => u.id === localUserId));
-        const localLabel = shareEnabled ? localDisplayName : 'Você';
-        const redEntries = includeLocalBase ? (stats.wrongRanking || []).map(item => ({ ...item, user: localLabel })) : [];
-        const greenEntries = includeLocalBase ? (stats.reportRanking || []).map(item => ({ ...item, user: localLabel })) : [];
-        sharedUsers.forEach(user => {
-          const userStats = getModeStats(user.stats, i);
-          if (!userStats) return;
-          const label = user.id === localUserId ? localDisplayName : getUserName(user);
-          (userStats.wrongRanking || []).forEach(item => {
-            redEntries.push({ ...item, user: label });
-          });
-          (userStats.reportRanking || []).forEach(item => {
-            greenEntries.push({ ...item, user: label });
-          });
-        });
-        if (redEntries.length) {
+        const red = stats.wrongRanking || [];
+        const green = stats.reportRanking || [];
+        if (red.length) {
           const title = document.createElement('h2');
           title.textContent = 'Ranking vermelho';
           title.className = 'ranking-title-red';
           section.appendChild(title);
-          const sortedRed = [...redEntries].sort((a, b) => (b.count || 0) - (a.count || 0));
-          section.appendChild(createRankingTable(sortedRed, 'red', [
-            { field: 'user', label: 'Usuário' },
+          section.appendChild(createRankingTable([...red].sort((a,b) => b.count - a.count), 'red', [
             { field: 'expected', label: 'Esperado' },
             { field: 'input', label: 'Entrada' },
             { field: 'folder', label: 'Pasta' },
             { field: 'count', label: 'Erros' }
           ]));
         }
-        if (greenEntries.length) {
+        if (green.length) {
           const title = document.createElement('h2');
           title.textContent = 'Ranking verde limão';
           title.className = 'ranking-title-lime';
           section.appendChild(title);
-          const sortedGreen = [...greenEntries].sort((a, b) => parseFloat(b.level || 0) - parseFloat(a.level || 0));
-          section.appendChild(createRankingTable(sortedGreen, 'lime', [
-            { field: 'user', label: 'Usuário' },
+          section.appendChild(createRankingTable(green, 'lime', [
             { field: 'expected', label: 'Esperado' },
             { field: 'input', label: 'Entrada' },
             { field: 'folder', label: 'Pasta' },
@@ -178,7 +118,7 @@
       levelTitle.className = 'custom-title';
       levelTitle.textContent = 'Detalhe dos níveis';
       container.appendChild(levelTitle);
-      const details = safeParse(localStorage.getItem('levelDetails'), []);
+      const details = JSON.parse(localStorage.getItem('levelDetails') || '[]');
       if (details.length) {
         const table = document.createElement('table');
         table.className = 'ranking-table';
@@ -194,6 +134,5 @@
       }
     });
   </script>
-
 </body>
 </html>
