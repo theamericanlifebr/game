@@ -1,95 +1,6 @@
 let pastas = {};
 let homophonesMap = {};
 
-function safeParse(value, fallback = null) {
-  if (typeof value !== 'string') return fallback;
-  try {
-    return JSON.parse(value);
-  } catch (err) {
-    console.error('Erro ao fazer parse do JSON:', err);
-    return fallback;
-  }
-}
-
-function getUserIdentifier(user) {
-  if (!user || typeof user !== 'object') return null;
-  return (
-    user.id ||
-    user.uid ||
-    user.userId ||
-    user.email ||
-    user.username ||
-    user.name ||
-    'local-user'
-  );
-}
-
-function cloneStatsForShare(stats) {
-  const clone = {};
-  Object.entries(stats || {}).forEach(([mode, data]) => {
-    if (!data || typeof data !== 'object') return;
-    clone[mode] = {
-      totalPhrases: data.totalPhrases || 0,
-      totalTime: data.totalTime || 0,
-      timePoints: data.timePoints || 0,
-      correct: data.correct || 0,
-      wrong: data.wrong || 0,
-      report: data.report || 0,
-      wrongRanking: Array.isArray(data.wrongRanking)
-        ? data.wrongRanking.map(item => ({ ...item }))
-        : [],
-      reportRanking: Array.isArray(data.reportRanking)
-        ? data.reportRanking.map(item => ({ ...item }))
-        : []
-    };
-  });
-  return clone;
-}
-
-let currentUser = safeParse(localStorage.getItem('currentUser'), null);
-if (currentUser && typeof window !== 'undefined') {
-  window.currentUser = currentUser;
-}
-
-function syncSharedRankings(user, statsSource = {}) {
-  try {
-    const raw = localStorage.getItem('sharedRankings');
-    const list = safeParse(raw, []);
-    const identifier = getUserIdentifier(user);
-    if (!identifier) {
-      const fallbackIndex = list.findIndex(entry => entry && entry.id === 'local-user');
-      if (!user && fallbackIndex >= 0) {
-        list.splice(fallbackIndex, 1);
-        localStorage.setItem('sharedRankings', JSON.stringify(list));
-      }
-      return;
-    }
-    const existingIndex = list.findIndex(entry => entry && entry.id === identifier);
-    if (!user || !user.shareResults) {
-      if (existingIndex >= 0) {
-        list.splice(existingIndex, 1);
-        localStorage.setItem('sharedRankings', JSON.stringify(list));
-      }
-      return;
-    }
-    const payload = {
-      id: identifier,
-      name: user.displayName || user.name || user.username || user.email || 'Você',
-      shareResults: true,
-      stats: cloneStatsForShare(user.stats || statsSource),
-      updatedAt: new Date().toISOString()
-    };
-    if (existingIndex >= 0) {
-      list[existingIndex] = payload;
-    } else {
-      list.push(payload);
-    }
-    localStorage.setItem('sharedRankings', JSON.stringify(list));
-  } catch (err) {
-    console.error('Erro ao sincronizar rankings compartilhados:', err);
-  }
-}
-
 function parsePastas(raw) {
   const result = {};
   for (const [key, texto] of Object.entries(raw)) {
@@ -376,24 +287,12 @@ if (!ilifeDone) {
 }
 let ilifeActive = false;
 let sessionStart = null;
-const legacyStats = safeParse(localStorage.getItem('mode1Stats'), null);
-let modeStats = safeParse(localStorage.getItem('modeStats'), {});
+const legacyStats = JSON.parse(localStorage.getItem('mode1Stats') || 'null');
+let modeStats = JSON.parse(localStorage.getItem('modeStats') || '{}');
 if (legacyStats && !modeStats[1]) {
   modeStats[1] = legacyStats;
   localStorage.removeItem('mode1Stats');
   localStorage.setItem('modeStats', JSON.stringify(modeStats));
-}
-syncSharedRankings(currentUser, modeStats);
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'currentUser') {
-      currentUser = safeParse(event.newValue, null);
-      if (currentUser) {
-        window.currentUser = currentUser;
-      }
-      syncSharedRankings(currentUser, modeStats);
-    }
-  });
 }
 let modeStartTimes = {};
 let lastWasError = false;
@@ -493,18 +392,10 @@ function ensureModeStats(mode) {
 
 function saveModeStats() {
   localStorage.setItem('modeStats', JSON.stringify(modeStats));
-  if (currentUser && typeof currentUser === 'object') {
-    currentUser.stats = cloneStatsForShare(modeStats);
-    try {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-      if (typeof window !== 'undefined') {
-        window.currentUser = currentUser;
-      }
-    } catch (err) {
-      console.error('Erro ao salvar dados do usuário:', err);
-    }
+  if (typeof currentUser === 'object' && currentUser) {
+    currentUser.stats = modeStats;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
   }
-  syncSharedRankings(currentUser, modeStats);
   if (typeof saveUserPerformance === 'function') {
     saveUserPerformance(modeStats);
   }
